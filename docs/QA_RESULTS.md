@@ -1,6 +1,6 @@
 # QA_RESULTS.md — Gastos
 
-**Iteraciones evaluadas:** ninguna todavía (Fase 0 sin código)
+**Iteraciones evaluadas:** ITER-001 parcial (Paso 2: suite de SPEC-001, 21/21 en verde)
 **Última actualización:** 2026-09-20
 
 ---
@@ -9,7 +9,7 @@
 
 | Iteración | Fase | Tests ejecutados | Defectos | Estado |
 |---|---|---|---|---|
-| — | — | 0 | 0 | sin código: nada que probar |
+| ITER-001 (parcial) | SPEC-001 API + suite | 21 (20 unit/integración + 1 cliente) | 1 detectado y corregido | suite en verde; falta UI |
 
 > Este documento está **vacío de resultados a propósito**: se completa cuando exista la primera
 > línea de código. Se crea ahora para que la estructura de QA no sea una improvisación posterior.
@@ -18,7 +18,7 @@
 
 | Métrica | Valor | Objetivo |
 |---|---|---|
-| Tests unitarios + integración | 0 | ≥ 1 por criterio de aceptación |
+| Tests unitarios + integración | **21** (15 AC cubiertos) | ≥ 1 por criterio de aceptación |
 | Tests E2E | 0 | flujos críticos |
 | Defectos P0/P1 abiertos | 0 | 0 |
 | Cobertura de AC | n/a | 100 % |
@@ -52,7 +52,7 @@ Sin datos. Los patrones se documentarán cuando existan al menos una iteración 
 
 | ID | Fase | Causa | Fix | Prevención |
 |---|---|---|---|---|
-| — | — | — | — | — |
+| DEF-001 | ITER-001 (suite) | El test de AC-07 pasaba a medias: el token vencido devolvía 401 pero **no se eliminaba** de la tabla `sessions` | `resolveSession` ahora elimina de inmediato la sesión vencida encontrada (`findAny` + `deleteByToken`) | los tokens muertos no se acumulan: AC-07 verifica el borrado real en la BD |
 
 ## 7. Hallazgos detectados **antes** de codificar (Fase 0)
 

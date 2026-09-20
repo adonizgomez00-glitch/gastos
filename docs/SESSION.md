@@ -38,6 +38,5 @@ regenerarlo destruiría las notas manuales. En este proyecto se corrige con marc
 
 ## Próximos pasos inmediatos
 
-1. Escribir la suite de tests de SPEC-001 (`tests/run-all.js` + 8 archivos, 15 AC).
-2. Implementar la Fase C: `index.html`, CSS mobile-first, `ApiClient`, `LoginController`/`LoginView`/`HomeView`.
-3. Cerrar ITER-001: `npm test` + `check:docs` en verde, actualizar `CHECKPOINT.md`/`PROJECT_STATE.md`/`QA_RESULTS.md`, checkpoint formal, commit + etiqueta.
+1. Fase C: `index.html`, CSS mobile-first, `ApiClient`, `LoginController`/`LoginView`/`HomeView`.
+2. Cerrar ITER-001: `npm test` y `check:docs` en verde, actualizar `CHECKPOINT.md`, crear `context-checkpoints/ITER-001-*.md` final, commit + etiqueta.

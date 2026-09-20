@@ -12,7 +12,7 @@ import { bootstrap } from '../../server/bootstrap.js'
 
 /**
  * Arranca una instancia aislada para pruebas.
- * @param {object} [options] `clock`, `config`, `now`
+ * @param {object} [options] `clock` (reloj inyectable), `config` (sobrescribe defaults)
  * @returns {Promise<object>} contexto de prueba con `request`, `close`, `deps`, `config`, `lines`
  */
 export async function startTestServer(options = {}) {
@@ -20,7 +20,6 @@ export async function startTestServer(options = {}) {
   const logLines = []
   const deps = bootstrap({
     clock: options.clock,
-    now: options.now,
     logLines,
     logLevel: 'error',
     config: {
@@ -46,7 +45,6 @@ export async function startTestServer(options = {}) {
     db: deps.db,
     authService: deps.authService,
     passwordService: deps.passwordService,
-    interval: null,
 
     /**
      * Petición HTTP con cookies persistentes y parseo de JSON.
@@ -55,6 +53,7 @@ export async function startTestServer(options = {}) {
      */
     async request(method, routePath, body, extra = {}) {
       const headers = { ...(body !== undefined ? { 'Content-Type': 'application/json' } : {}), ...(extra.headers || {}) }
+      if (extra.cookie) headers.Cookie = extra.cookie
       const response = await fetch(`${baseUrl}${routePath}`, {
         method,
         headers,

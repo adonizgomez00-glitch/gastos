@@ -20,10 +20,10 @@ import { createApp } from './app.js'
  */
 export function bootstrap(overrides = {}) {
   const config = createConfig(overrides.config || {})
-  const logLines = overrides.logLines || []
+  const logLines = overrides.logLines || null
   const logger = overrides.logger || makeLogger({
     level: overrides.logLevel || config.logLevel,
-    sink: logLines.length ? (line) => logLines.push(line) : undefined
+    sink: logLines ? (line) => logLines.push(line) : undefined
   })
 
   fs.mkdirSync(config.dataDir, { recursive: true })
@@ -36,7 +36,7 @@ export function bootstrap(overrides = {}) {
   const userRepository = new UserRepository(db)
   const sessionRepository = new SessionRepository(db)
   const passwordService = new PasswordService({ iterations: config.pbkdf2Iterations })
-  const rateLimiter = new RateLimiter({ ...config.loginRateLimit, now: overrides.now })
+  const rateLimiter = new RateLimiter(overrides.rateLimiterOptions || { ...config.loginRateLimit })
 
   const authService = new AuthService({
     config,

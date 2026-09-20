@@ -16,7 +16,7 @@
     "rates:refresh": "node --disable-warning=ExperimentalWarning scripts/rates-refresh.js",
     "backup:db": "bash scripts/backup-db.sh",
     "context:live": "bash scripts/gen-context-live.sh",
-    "test": "node tests/run-all.js",
+    "test": "NODE_ENV=test node tests/run-all.js",
     "test:e2e": "node tests/e2e/run-e2e.js",
     "check:docs": "node scripts/check-docs-consistency.js"
   },

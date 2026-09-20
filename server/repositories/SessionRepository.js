@@ -30,6 +30,16 @@ export class SessionRepository {
   }
 
   /**
+   * Busca una sesión por token, vigente o no (se usa para limpiar vencidas al encontrarlas, AC-07).
+   * @param {string} token token
+   * @returns {object|null} sesión o null
+   */
+  findAny(token) {
+    const row = this._db.prepare('SELECT * FROM sessions WHERE token = ?').get(token)
+    return row ? toSession(row) : null
+  }
+
+  /**
    * Elimina una sesión por token (logout).
    * @param {string} token token
    * @returns {number} filas borradas

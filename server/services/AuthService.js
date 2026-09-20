@@ -116,19 +116,23 @@ export class AuthService {
 
   /**
    * Resuelve una sesión vigente.
+   * Regla: encontrar una sesión vencida la elimina de inmediato (AC-07),
+   * para que ningún token muerto quede en la base de datos.
    * @param {string} token token de sesión
    * @returns {object|null} usuario autenticado o null
    */
   resolveSession(token) {
     if (!token) return null
     const session = this._sessions.findValid(token, this._now())
-    if (!session) return null
-    const user = this._users.findById(session.userId)
-    if (!user || !user.active) {
+    if (session) {
+      const user = this._users.findById(session.userId)
+      if (user && user.active) return publicUser(user)
       this._sessions.deleteByToken(token)
       return null
     }
-    return publicUser(user)
+    // No vigente: si existe pero vencida, se elimina de inmediato.
+    if (this._sessions.findAny(token)) this._sessions.deleteByToken(token)
+    return null
   }
 
   /** Purga sesiones vencidas (arranque del servidor). @returns {number} filas borradas */

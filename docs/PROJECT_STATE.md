@@ -35,8 +35,8 @@
 - [x] Fase A: config, utilidades, `sqlite.js`, migraciones, router, app, bootstrap (verificado en vivo).
 - [x] Fase B: `PasswordService`, repositorios, `AuthService`, middleware, rutas auth/health (verificado en vivo).
 - [x] Corrección real de `cookiePath` (dev `/`, prod `/gastos`).
-- [ ] Suite de tests de 15 AC (`tests/run-all.js` + 8 archivos).
-- [ ] Fase C: UI mínima de login + test de rutas relativas.
+- [x] Suite de 15 AC automatizada: `tests/run-all.js` + 9 archivos, **21 en verde, 0 en rojo, 1.3 s**.
+- [ ] Fase C: UI mínima de login (el test de rutas relativas ya existe y hoy pasa en modo registrado).
 
 ### ⏳ Pendientes (bloqueadas por la orden de "implementar")
 
@@ -52,8 +52,8 @@
 
 | Métrica | Valor actual | Objetivo |
 |---|---|---|
-| Cobertura de criterios de aceptación con test | n/a (sin código) | 100 % |
-| Tests unitarios + integración | 0 | ≥ 1 por AC |
+| Cobertura de criterios de aceptación con test | **100 % de SPEC-001** (15 AC en 21 pruebas) | 100 % |
+| Tests unitarios + integración | **21** (20 de API/dominio + 1 de cliente) | ≥ 1 por AC |
 | Tests E2E | 0 | flujos críticos cubiertos |
 | `npm run check:docs` | **pass** (0 contradicciones, 0 avisos) | siempre pass |
 | Defectos abiertos P0/P1 | 0 | 0 |
@@ -109,4 +109,5 @@ gastos/
 |---|---|
 | 2026-09-20 | Creación: iteración ITER-000, tareas, métricas, deuda y próximos pasos. |
 | 2026-09-20 17:00 | Checkpoint manual ITER-001: Fase A+B en vivo, `cookiePath` corregido, suite y UI pendientes. |
+| 2026-09-20 | Paso 2 completado: suite de 15 AC en verde (21/21) + test de rutas relativas registrado. |
 | 2026-09-20 | Cierre de la documentación de arranque: repo git + tag `v0.0.1-fase0`, `check:docs` validado y `context:live` generado. |
