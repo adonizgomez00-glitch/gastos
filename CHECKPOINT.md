@@ -16,7 +16,7 @@
 | Código | Fase A, B y C verificadas en vivo; suite 21/21. PSA del interruptor de despliegue pendiente → X-ref en tareas. |
 | Spec activa | `docs/specs/SPEC-001-autenticacion.md` (**aprobada**, **implementada**, 15 AC en tests, UI mínima de login) |
 | Repo | `git init` + commits (HEAD actual) + etiqueta pendiente ITER-001 |
-| Despliegue | Documentado; no ejecutado; pending SPEC-010 + PSA del interruptor.
+| Despliegue | Documentado; no ejecutado; pendiente de SPEC-010 + DCA del interruptor de despliegue.
 
 ## 2. Módulos y entregables
 
