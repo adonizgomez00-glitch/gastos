@@ -6,8 +6,8 @@ Cada spec es un **contrato ejecutable**: sus criterios de aceptación se convier
 | Spec | Título | Estado | Depende de |
 |---|---|---|---|
 | [SPEC-000](./SPEC-000-plantilla.md) | Plantilla obligatoria | — | — |
-| [SPEC-001](./SPEC-001-autenticacion.md) | Autenticación y sesión del dueño | 📝 propuesta | — |
-| SPEC-002 | Cuentas (efectivo/débito/crédito) | ⏳ pendiente | SPEC-001 |
+| [SPEC-001](./SPEC-001-autenticacion.md) | Autenticación y sesión del dueño | ✅ **aprobada** (ITER-001) | — |
+| SPEC-002 | Cuentas (efectivo/débito/crédito) | ⏳ pendiente | SPEC-001 ✅ |
 | SPEC-003 | Categorías (gasto/ingreso) | ⏳ pendiente | SPEC-001 |
 | SPEC-004 | Transacciones (gastos e ingresos) | ⏳ pendiente | SPEC-002, SPEC-003, SPEC-008 |
 | SPEC-005 | Transferencias entre cuentas | ⏳ pendiente | SPEC-004 |
@@ -38,8 +38,9 @@ Cada spec es un **contrato ejecutable**: sus criterios de aceptación se convier
 
 ## Orden de implementación sugerido
 
-1. **SPEC-008** (tipos de cambio) — no depende de nada y desbloquea las transacciones.
-2. **SPEC-001** (autenticación) — puerta de entrada.
+1. **SPEC-001** (autenticación) — **ITER-001**: es la puerta de entrada; todas las rutas de negocio
+   pasan por `requireAuth`, así que sin ella no se puede probar nada más.
+2. **SPEC-008** (tipos de cambio) — **ITER-002**: no depende de nada y desbloquea las transacciones.
 3. **SPEC-002 + SPEC-003** (cuentas y categorías) — catálogos base.
 4. **SPEC-004** (transacciones) — el núcleo; luego SPEC-005 (transferencias).
 5. **SPEC-006 + SPEC-007** (presupuestos y recurrentes).

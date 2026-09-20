@@ -2,7 +2,7 @@
 spec_id: SPEC-001
 titulo: Autenticacion y sesion del dueno
 version: 1.0.0
-estado: propuesta
+estado: aprobada
 fecha: 2026-09-20
 autor: Adonis (con asistencia del agente)
 relacionadas: [SPEC-010]
@@ -10,6 +10,8 @@ adrs: [ADR-001, ADR-005, ADR-006]
 ---
 
 # SPEC-001 — Autenticación y sesión del dueño
+
+> **Estado: ✅ aprobada** (2026-09-20) · Iteración de implementación: **ITER-001**
 
 ## 1. Problema
 
@@ -167,6 +169,10 @@ GET  /api/auth/me       (cookie)                   -> 200 { id, email, name, bas
 | AC-02, AC-03, AC-14, AC-15 | `tests/integration/auth.invalid.test.js` | idem |
 | AC-04 | `tests/integration/auth.ratelimit.test.js` | `server/utils/rateLimiter.js` |
 | AC-05, AC-06, AC-07, AC-08 | `tests/integration/auth.session.test.js` | `server/middleware/auth.js` |
+
+> **Precisión (2026-09-20):** los ejemplos usan `GET /api/transactions` como ruta protegida, pero esa ruta
+> llega con SPEC-004. En ITER-001 la ruta protegida de prueba es **`GET /api/auth/me`**; el criterio
+> (401 sin sesión válida) no cambia.
 | AC-09 | `tests/integration/auth.password.test.js` | `src/services/PasswordService.js` |
 | AC-11 | `tests/integration/auth.me.test.js` | `server/routes/auth.js` |
 | AC-13 | `tests/unit/create-user.test.js` | `scripts/create-user.js` |
@@ -193,5 +199,5 @@ GET  /api/auth/me       (cookie)                   -> 200 { id, email, name, bas
 [x] Ejemplos ejecutables (login, cookie, logout, 401)
 [x] Restricciones técnicas, de negocio y de seguridad
 [x] Trazabilidad AC -> test -> código
-[ ] Aprobación explícita del dueño  <-- PENDIENTE
+[x] Aprobación explícita del dueño (2026-09-20)
 ```

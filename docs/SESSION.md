@@ -3,10 +3,10 @@
 | Campo | Valor |
 |---|---|
 | **Inicio** | 2026-09-20 |
-| **Iteración** | ITER-000 |
-| **Fase** | 0 — Descubrimiento y decisiones |
-| **Objetivo de la sesión** | Cerrar el arranque documental del proyecto (AGENT.md y compañía) sin escribir código de la app |
-| **Checkpoint** | ITER-000-20260920-1600 (por crear en el primer checkpoint formal) |
+| **Iteración** | ITER-001 (en curso) |
+| **Fase** | 1 — Plan/Implementación: fundaciones + SPEC-001 |
+| **Objetivo de la sesión** | Dejar SPEC-001 aprobada, verificar en vivo la API de autenticación y preparar la suite de 15 AC |
+| **Checkpoint** | `context-checkpoints/ITER-001-20260920-1700.md` (manual, 17:00) |
 
 ## Log de actividad
 
@@ -21,6 +21,8 @@ cron del watchdog de Química, `sudo` con contraseña, disco `/home` al 86 %.
    encabezado de disco repetido y tabla del Funnel rota por un separador).
 7. Pruebas negativas del verificador (contradicción de despliegue y token de infraestructura) → falla como debe.
 8. `git init` + commit inicial + etiqueta `v0.0.1-fase0`.
+9. Paso 0 (sellar SPEC-001 aprobada) + Fase A (andamiaje) + Fase B (auth verificada en vivo) +
+   suite iniciada (`tests/helpers/`) + corrección real de `cookiePath`.
 
 ## Decisiones de la sesión
 
@@ -36,5 +38,6 @@ regenerarlo destruiría las notas manuales. En este proyecto se corrige con marc
 
 ## Próximos pasos inmediatos
 
-1. Aprobar y escribir `docs/specs/SPEC-001-autenticacion.md`.
-2. Implementar (solo tras la orden explícita de "implementar"): migraciones + `sqlite.js` + auth.
+1. Escribir la suite de tests de SPEC-001 (`tests/run-all.js` + 8 archivos, 15 AC).
+2. Implementar la Fase C: `index.html`, CSS mobile-first, `ApiClient`, `LoginController`/`LoginView`/`HomeView`.
+3. Cerrar ITER-001: `npm test` + `check:docs` en verde, actualizar `CHECKPOINT.md`/`PROJECT_STATE.md`/`QA_RESULTS.md`, checkpoint formal, commit + etiqueta.

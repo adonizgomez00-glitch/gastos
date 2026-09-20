@@ -1,7 +1,7 @@
 # PROJECT_STATE.md — Gastos
 
-**Iteración actual:** ITER-000 · **Fase:** 0 completada (diseño y decisiones) · **Código:** no existe todavía
-**Última actualización:** 2026-09-20
+**Iteración actual:** ITER-001 (en curso) · **Fase:** 1 Plan/Implementación · **Código:** Fase A+B verificadas en vivo; falta suite + UI
+**Última actualización:** 2026-09-20 17:00 (checkpoint manual)
 
 ---
 
@@ -9,9 +9,9 @@
 
 | Campo | Valor |
 |---|---|
-| Objetivo | Cerrar el arranque documental y las decisiones de Fase 0 |
-| Estado | ✅ completada (documentación) |
-| Spec activa | `docs/specs/SPEC-001-autenticacion.md` (por aprobar) |
+| Objetivo | Implementar fundaciones + SPEC-001 con sus 15 AC en tests y UI mínima de login |
+| Estado | 🔄 en curso (Fase A y B verificadas en vivo; falta suite + UI) |
+| Spec activa | `docs/specs/SPEC-001-autenticacion.md` (aprobada, en implementación) |
 | Despliegue | pendiente (documentado, no ejecutado) |
 
 ## 2. Tareas
@@ -29,9 +29,14 @@
 - [x] `npm run context:live` implementado y ejecutado: genera el estado vivo real de infraestructura.
 - [x] Repositorio git inicializado; etiqueta `v0.0.1-fase0`.
 
-### 🔄 En curso
+### 🔄 En curso (ITER-001)
 
-- [ ] **Aprobar** `SPEC-001-autenticacion.md` (redactada, pendiente de aprobación).
+- [x] **Aprobar** `SPEC-001-autenticacion.md` (aprobada 2026-09-20).
+- [x] Fase A: config, utilidades, `sqlite.js`, migraciones, router, app, bootstrap (verificado en vivo).
+- [x] Fase B: `PasswordService`, repositorios, `AuthService`, middleware, rutas auth/health (verificado en vivo).
+- [x] Corrección real de `cookiePath` (dev `/`, prod `/gastos`).
+- [ ] Suite de tests de 15 AC (`tests/run-all.js` + 8 archivos).
+- [ ] Fase C: UI mínima de login + test de rutas relativas.
 
 ### ⏳ Pendientes (bloqueadas por la orden de "implementar")
 
@@ -103,4 +108,5 @@ gastos/
 | Fecha | Cambio |
 |---|---|
 | 2026-09-20 | Creación: iteración ITER-000, tareas, métricas, deuda y próximos pasos. |
+| 2026-09-20 17:00 | Checkpoint manual ITER-001: Fase A+B en vivo, `cookiePath` corregido, suite y UI pendientes. |
 | 2026-09-20 | Cierre de la documentación de arranque: repo git + tag `v0.0.1-fase0`, `check:docs` validado y `context:live` generado. |

@@ -1,7 +1,7 @@
 # CHECKPOINT — App de Gastos Personales
 
-> **Último checkpoint de contexto**: 2026-09-20 · ITER-000 · Fase 0 (descubrimiento y decisiones)
-> **Archivo de checkpoint**: `context-checkpoints/ITER-000-20260920-1600.md` *(se crea en el primer checkpoint formal)*
+> **Último checkpoint de contexto**: 2026-09-20 17:00 · **ITER-001 (en curso)** · Fase 1
+> **Archivo de checkpoint**: `context-checkpoints/ITER-001-20260920-1700.md` *(detalle de lo hecho y lo pendiente; el de ITER-000 también existe)*
 > **Uso de contexto al cerrar**: ~35 % del límite del modelo
 > **Estado de infraestructura**: ver `docs/Context_live.md` (local, **fuera de git**) — acá **no se copia** ningún dato de servicio, puerto o URL
 
@@ -11,10 +11,10 @@
 
 | Campo | Valor |
 |---|---|
-| Fase | 0 — Descubrimiento y decisiones (**completada**) → 1 Plan (siguiente) |
-| Iteración | ITER-000 |
-| Código | **No existe todavía**: el repositorio contiene solo documentación |
-| Spec activa | `docs/specs/SPEC-001-autenticacion.md` (por aprobar) |
+| Fase | 1 — Plan/Implementación (**en curso**): fundaciones + SPEC-001 |
+| Iteración | **ITER-001 (en curso)** |
+| Código | **Fase A y B verificadas en vivo**; falta la suite automatizada y la UI (ver puntos 2-3) |
+| Spec activa | `docs/specs/SPEC-001-autenticacion.md` (**aprobada**, en implementación) |
 | Repo | `git init` + commit inicial (referencia estable: tag `v0.0.1-fase0`) |
 | Despliegue | **Pendiente** (no hay servicio, ni datos, ni ruta pública) |
 
@@ -23,7 +23,7 @@
 | # | Módulo | Spec | Estado |
 |---|---|---|---|
 | 0 | Documentación de arranque (AGENT.md, ARCHITECTURE.md, 4 vivos) | — | ✅ completada |
-| 1 | Autenticación (dueño único) | SPEC-001 | ⏳ |
+| 1 | Autenticación (dueño único) | SPEC-001 | 🔄 API verificada a mano; **falta suite de 15 AC** |
 | 2 | Cuentas (efectivo/débito/crédito) | SPEC-002 | ⏳ |
 | 3 | Categorías (gasto/ingreso, jerárquicas) | SPEC-003 | ⏳ |
 | 4 | Transacciones (gastos e ingresos) | SPEC-004 | ⏳ |
@@ -51,11 +51,16 @@
 - Diseño y puesta en marcha del contrato anti-contradicción `CHECKPOINT.md` ↔ `docs/Context_live.md`,
   con **pruebas negativas** del verificador: inyectar una afirmación falsa de despliegue y un token de
   infraestructura en `CHECKPOINT.md` produce `FAIL` y salida `1`; sin ellos, salida `0`.
+- **Checkpoint manual (17:00)**: Paso 0 + Fase A + Fase B verificadas en vivo; defecto real de
+  `cookiePath` corregido; suite y UI pendientes. Archivo: `context-checkpoints/ITER-001-20260920-1700.md`.
 
 ## 5. Próximo paso (uno, verificable)
 
-Redactar `docs/specs/SPEC-001-autenticacion.md` con criterios de aceptación Given/When/Then y
-obtener la aprobación explícita del usuario **antes** de escribir código.
+Escribir y poner en verde la **suite de tests de SPEC-001** (`tests/run-all.js` + 8 archivos, 15 AC),
+luego la **UI mínima de login** (Fase C) y cerrar ITER-001 con commit + etiqueta.
+
+> ✅ Aprobada la SPEC-001 (2026-09-20). Orden corregido en `docs/specs/README.md`: auth primero
+> (puerta de entrada) y tipos de cambio en ITER-002.
 
 ## 6. Riesgos de trabajo
 
