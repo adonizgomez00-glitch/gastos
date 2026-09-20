@@ -15,14 +15,14 @@
 | Iteración | ITER-000 |
 | Código | **No existe todavía**: el repositorio contiene solo documentación |
 | Spec activa | `docs/specs/SPEC-001-autenticacion.md` (por aprobar) |
-| Repo | `git init` + commit inicial (HEAD: `<pendiente>`) |
+| Repo | `git init` + commit inicial (referencia estable: tag `v0.0.1-fase0`) |
 | Despliegue | **Pendiente** (no hay servicio, ni datos, ni ruta pública) |
 
 ## 2. Módulos y entregables
 
 | # | Módulo | Spec | Estado |
 |---|---|---|---|
-| 0 | Documentación de arranque (AGENT.md, ARCHITECTURE.md, 4 vivos) | — | 🔄 en curso |
+| 0 | Documentación de arranque (AGENT.md, ARCHITECTURE.md, 4 vivos) | — | ✅ completada |
 | 1 | Autenticación (dueño único) | SPEC-001 | ⏳ |
 | 2 | Cuentas (efectivo/débito/crédito) | SPEC-002 | ⏳ |
 | 3 | Categorías (gasto/ingreso, jerárquicas) | SPEC-003 | ⏳ |
@@ -48,7 +48,9 @@
 - Cierre de las 9 decisiones de Fase 0 (detalle en `AGENT.md` §15 y `ARCHITECTURE.md` ADR-001..006).
 - Verificación empírica del entorno de despliegue (puerto interno, servicio, proxy, entrada
   pública y disco) **registrada en `docs/Context_live.md`**; ningún dato se dio por sabido de memoria.
-- Diseño y puesta en marcha del contrato anti-contradicción `CHECKPOINT.md` ↔ `docs/Context_live.md`.
+- Diseño y puesta en marcha del contrato anti-contradicción `CHECKPOINT.md` ↔ `docs/Context_live.md`,
+  con **pruebas negativas** del verificador: inyectar una afirmación falsa de despliegue y un token de
+  infraestructura en `CHECKPOINT.md` produce `FAIL` y salida `1`; sin ellos, salida `0`.
 
 ## 5. Próximo paso (uno, verificable)
 

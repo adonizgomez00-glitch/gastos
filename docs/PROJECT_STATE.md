@@ -24,11 +24,14 @@
 - [x] `AGENT.md` (16 secciones), `AGENTS.md`, `ARCHITECTURE.md` (ADR-001..006), `CHECKPOINT.md`.
 - [x] Documentos vivos: `CONTEXT.md`, `PROJECT_STATE.md`, `QA_RESULTS.md`, `SESSION.md`.
 - [x] Contrato anti-contradicción + verificador `npm run check:docs`.
-- [x] `docs/specs/` con plantilla e índice.
+- [x] `docs/specs/` con plantilla, índice y **SPEC-001** redactada (15 criterios de aceptación).
+- [x] Verificador `npm run check:docs` implementado y **validado con pruebas negativas** (falla al detectar contradicción).
+- [x] `npm run context:live` implementado y ejecutado: genera el estado vivo real de infraestructura.
+- [x] Repositorio git inicializado; etiqueta `v0.0.1-fase0`.
 
 ### 🔄 En curso
 
-- [ ] `SPEC-001-autenticacion.md` (redacción y aprobación).
+- [ ] **Aprobar** `SPEC-001-autenticacion.md` (redactada, pendiente de aprobación).
 
 ### ⏳ Pendientes (bloqueadas por la orden de "implementar")
 
@@ -47,7 +50,7 @@
 | Cobertura de criterios de aceptación con test | n/a (sin código) | 100 % |
 | Tests unitarios + integración | 0 | ≥ 1 por AC |
 | Tests E2E | 0 | flujos críticos cubiertos |
-| `npm run check:docs` | pass | siempre pass |
+| `npm run check:docs` | **pass** (0 contradicciones, 0 avisos) | siempre pass |
 | Defectos abiertos P0/P1 | 0 | 0 |
 
 ## 4. Deuda técnica
@@ -100,3 +103,4 @@ gastos/
 | Fecha | Cambio |
 |---|---|
 | 2026-09-20 | Creación: iteración ITER-000, tareas, métricas, deuda y próximos pasos. |
+| 2026-09-20 | Cierre de la documentación de arranque: repo git + tag `v0.0.1-fase0`, `check:docs` validado y `context:live` generado. |

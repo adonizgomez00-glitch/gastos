@@ -16,6 +16,11 @@
 4. Verificaciones empíricas: puerto 8100 libre, `node:sqlite` sin flag, vhost nginx `:8000`, Funnel,
 cron del watchdog de Química, `sudo` con contraseña, disco `/home` al 86 %.
 5. Escritura de `AGENT.md` (16 secciones), `ARCHITECTURE.md`, `CHECKPOINT.md`, `README.md`, `AGENTS.md` y docs vivos.
+6. Implementación del verificador `npm run check:docs` y del generador `npm run context:live`;
+   el generador se ejecutó tres veces porque la primera reveló tres defectos reales (health duplicado,
+   encabezado de disco repetido y tabla del Funnel rota por un separador).
+7. Pruebas negativas del verificador (contradicción de despliegue y token de infraestructura) → falla como debe.
+8. `git init` + commit inicial + etiqueta `v0.0.1-fase0`.
 
 ## Decisiones de la sesión
 
