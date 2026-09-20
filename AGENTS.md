@@ -1,7 +1,7 @@
 # AGENTS.md — puntero
 
 > Este archivo existe solo para que las herramientas que autocargan `AGENTS.md`
-> (opencode, Codex, Cursor) encuentren el proyecto. **El documento canónico es
+> (opencode, Codex, Cursor, cline, hermes) encuentren el proyecto. **El documento canónico es
 > [`AGENT.md`](./AGENT.md).**
 
 Antes de tocar cualquier archivo, leé en este orden:

@@ -6,7 +6,7 @@ Cada spec es un **contrato ejecutable**: sus criterios de aceptación se convier
 | Spec | Título | Estado | Depende de |
 |---|---|---|---|
 | [SPEC-000](./SPEC-000-plantilla.md) | Plantilla obligatoria | — | — |
-| [SPEC-001](./SPEC-001-autenticacion.md) | Autenticación y sesión del dueño | ✅ **aprobada** (ITER-001) | — |
+| [SPEC-001](./SPEC-001-autenticacion.md) | Autenticación y sesión del dueño | 🔨 **implementada** (ITER-001) — suite 21/21, UI mínima de login, verifier DCA del interruptor de despliegue | — |
 | SPEC-002 | Cuentas (efectivo/débito/crédito) | ⏳ pendiente | SPEC-001 ✅ |
 | SPEC-003 | Categorías (gasto/ingreso) | ⏳ pendiente | SPEC-001 |
 | SPEC-004 | Transacciones (gastos e ingresos) | ⏳ pendiente | SPEC-002, SPEC-003, SPEC-008 |

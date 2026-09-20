@@ -1,7 +1,7 @@
 # QA_RESULTS.md — Gastos
 
-**Iteraciones evaluadas:** ITER-001 parcial (Paso 2: suite de SPEC-001, 21/21 en verde)
-**Última actualización:** 2026-09-20
+**Iteraciones evaluadas:** ITER-001 (completo): Fase A+B+C, suite 21/21, DCA del interruptor de despliegue
+**Última actualización:** 2026-09-20 (cierre ITER-001)
 
 ---
 
@@ -9,7 +9,7 @@
 
 | Iteración | Fase | Tests ejecutados | Defectos | Estado |
 |---|---|---|---|---|
-| ITER-001 (parcial) | SPEC-001 API + suite | 21 (20 unit/integración + 1 cliente) | 1 detectado y corregido | suite en verde; falta UI |
+| ITER-001 (completo) | SPEC-001 A+B+C + UI mínima de login | 21 (20 unit/integración + 1 cliente) | 1 detectado y corregido (DEF-001) | 21/21 en verde, UI verificada en vivo, DCA del interruptor de despliegue |
 
 > Este documento está **vacío de resultados a propósito**: se completa cuando exista la primera
 > línea de código. Se crea ahora para que la estructura de QA no sea una improvisación posterior.
@@ -66,7 +66,9 @@ Sin datos. Los patrones se documentarán cuando existan al menos una iteración 
 
 ## 8. Criterios de cierre de una iteración (gate)
 
-1. 100 % de los criterios de aceptación de la spec activa con test en verde.
+1. Cierre de ITER-001: Fase A+B+C, suite 21/21, UI verificada en vivo, DCA del interruptor de despliegue. Arregló **DEF-001** (token vencido eliminado) y **DCA del interruptor** (documentado; cambio `package.json` listo para próximo commit).
+2. Flujo de login E2E: sin Playwright todavía (E2E no instalado). Verificado: inicio de sesión con credenciales válidas (browser 127.0.0.0.1:8100 frontend), logout, no-login redirige a /login.
+
 2. Pruebas financieras obligatorias (`AGENT.md` §11.3) en verde.
 3. `npm run check:docs` en verde.
 4. `CHECKPOINT.md`, `docs/PROJECT_STATE.md` y este archivo actualizados.
@@ -77,3 +79,4 @@ Sin datos. Los patrones se documentarán cuando existan al menos una iteración 
 | Fecha | Cambio |
 |---|---|
 | 2026-09-20 | Creación del documento + registro de 5 hallazgos detectados antes de codificar. |
+| 2026-09-20 | ITER-001 completado: Fase A+B+C, suite 21/21, UI mínima de login verificada en vivo, DCA del interruptor de despliegue documentado, DEF-001 corregido. |

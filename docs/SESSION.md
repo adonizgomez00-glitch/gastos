@@ -3,10 +3,10 @@
 | Campo | Valor |
 |---|---|
 | **Inicio** | 2026-09-20 |
-| **Iteración** | ITER-001 (en curso) |
-| **Fase** | 1 — Plan/Implementación: fundaciones + SPEC-001 |
+| **Iteración** | ITER-001 (completada) |
+| **Fase** | 1 — Plan/Implementación: fundaciones + SPEC-001 (completada) |
 | **Objetivo de la sesión** | Dejar SPEC-001 aprobada, verificar en vivo la API de autenticación y preparar la suite de 15 AC |
-| **Checkpoint** | `context-checkpoints/ITER-001-20260920-1700.md` (manual, 17:00) |
+| **Checkpoint** | `context-checkpoints/ITER-001-20260920-1700.md` (manual, 17:00) + ITER-001-20260920-1732.md (cierre 17:32) |
 
 ## Log de actividad
 
@@ -38,5 +38,5 @@ regenerarlo destruiría las notas manuales. En este proyecto se corrige con marc
 
 ## Próximos pasos inmediatos
 
-1. Fase C: `index.html`, CSS mobile-first, `ApiClient`, `LoginController`/`LoginView`/`HomeView`.
-2. Cerrar ITER-001: `npm test` y `check:docs` en verde, actualizar `CHECKPOINT.md`, crear `context-checkpoints/ITER-001-*.md` final, commit + etiqueta.
+1. **Cierre de ITER-001**: SPEC-001 → `🔨 implementada`, DCA del interruptor de despliegue documentado, `CHECKPOINT.md`, `PROJECT_STATE.md`, `QA_RESULTS.md`, `SESSION.md` actualizados, checkpoint final, commit + etiqueta `v0.1.0-iter001`.
+2. Proponer **ITER-002** = SPEC-008 (tipos de cambio GTQ ⇄ USD).

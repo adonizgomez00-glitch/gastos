@@ -1,0 +1,44 @@
+/* Componentes compartidos de la UI. */
+.card {
+  background: var(--tarjeta);
+  border-radius: var(--radio);
+  padding: 24px;
+}
+
+.card h1 { margin: 0 0 4px; font-size: 1.6rem; }
+
+.muted { color: var(--suave); margin: 0 0 16px; }
+
+.error {
+  background: rgba(224, 86, 86, 0.12);
+  border: 1px solid var(--error);
+  border-radius: var(--radio);
+  padding: 8px 12px;
+}
+
+label { display: block; margin: 12px 0 4px; font-weight: 600; }
+
+input {
+  width: 100%;
+  padding: 12px;
+  font-size: 1rem;
+  border-radius: var(--radio);
+  border: 1px solid #33404e;
+  background: #0c1117;
+  color: var(--texto);
+}
+
+button {
+  width: 100%;
+  margin-top: 16px;
+  padding: 12px;
+  font-size: 1rem;
+  font-weight: 700;
+  border: 0;
+  border-radius: var(--radio);
+  background: var(--acento);
+  color: #06130c;
+  cursor: pointer;
+}
+
+button:disabled { opacity: 0.6; cursor: wait; }

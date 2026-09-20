@@ -3,6 +3,7 @@ import { isSameOrigin, parseUrl, readJsonBody, sendError, sendJson } from './uti
 import { Router } from './router.js'
 import { healthRoutes } from './routes/health.js'
 import { authRoutes } from './routes/auth.js'
+import { staticRoutes } from './routes/static.js'
 
 const METHODS_WITH_BODY = ['POST', 'PUT', 'PATCH']
 
@@ -15,7 +16,7 @@ export function createApp(deps) {
   const { config, logger } = deps
   const router = new Router()
 
-  for (const route of [...healthRoutes(deps), ...authRoutes(deps)]) {
+  for (const route of [...healthRoutes(deps), ...authRoutes(deps), ...staticRoutes(deps)]) {
     router.register(route.method, route.path, route.handler)
   }
 

@@ -10,8 +10,8 @@
 | Campo | Valor |
 |---|---|
 | Objetivo | Implementar fundaciones + SPEC-001 con sus 15 AC en tests y UI mínima de login |
-| Estado | 🔄 en curso (Fase A y B verificadas en vivo; falta suite + UI) |
-| Spec activa | `docs/specs/SPEC-001-autenticacion.md` (aprobada, en implementación) |
+| Estado | 🔨 completado (Fase A, B y C verificadas; suite 21/21; DCA del interruptor de despliegue documentado) |
+| Spec activa | `docs/specs/SPEC-001-autenticacion.md` (**implementada**) |
 | Despliegue | pendiente (documentado, no ejecutado) |
 
 ## 2. Tareas
@@ -36,7 +36,7 @@
 - [x] Fase B: `PasswordService`, repositorios, `AuthService`, middleware, rutas auth/health (verificado en vivo).
 - [x] Corrección real de `cookiePath` (dev `/`, prod `/gastos`).
 - [x] Suite de 15 AC automatizada: `tests/run-all.js` + 9 archivos, **21 en verde, 0 en rojo, 1.3 s**.
-- [ ] Fase C: UI mínima de login (el test de rutas relativas ya existe y hoy pasa en modo registrado).
+- [x] Fase C: UI mínima de login (el test de rutas relativas ya existe y hoy pasa en modo registrado).
 
 ### ⏳ Pendientes (bloqueadas por la orden de "implementar")
 
@@ -110,4 +110,5 @@ gastos/
 | 2026-09-20 | Creación: iteración ITER-000, tareas, métricas, deuda y próximos pasos. |
 | 2026-09-20 17:00 | Checkpoint manual ITER-001: Fase A+B en vivo, `cookiePath` corregido, suite y UI pendientes. |
 | 2026-09-20 | Paso 2 completado: suite de 15 AC en verde (21/21) + test de rutas relativas registrado. |
+| 2026-09-20 | Cierre de ITER-001: SPEC-001 → implementada, Fase C realizada (UI mínima de login), suite 21/21, DCA del interruptor de despliegue documentado. |
 | 2026-09-20 | Cierre de la documentación de arranque: repo git + tag `v0.0.1-fase0`, `check:docs` validado y `context:live` generado. |

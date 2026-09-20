@@ -11,19 +11,19 @@
 
 | Campo | Valor |
 |---|---|
-| Fase | 1 — Plan/Implementación (**en curso**): fundaciones + SPEC-001 |
-| Iteración | **ITER-001 (en curso)** |
-| Código | **Fase A y B verificadas en vivo**; falta la suite automatizada y la UI (ver puntos 2-3) |
-| Spec activa | `docs/specs/SPEC-001-autenticacion.md` (**aprobada**, en implementación) |
-| Repo | `git init` + commit inicial (referencia estable: tag `v0.0.1-fase0`) |
-| Despliegue | **Pendiente** (no hay servicio, ni datos, ni ruta pública) |
+| Fase | 2 — **Cerrando ITER-001** (suite + Fase C verificadas; PSA del interruptor pendiente) |
+| Iteración | **ITER-001 (a cerrar)** |
+| Código | Fase A, B y C verificadas en vivo; suite 21/21. PSA del interruptor de despliegue pendiente → X-ref en tareas. |
+| Spec activa | `docs/specs/SPEC-001-autenticacion.md` (**aprobada**, **implementada**, 15 AC en tests, UI mínima de login) |
+| Repo | `git init` + commits (HEAD actual) + etiqueta pendiente ITER-001 |
+| Despliegue | Documentado; no ejecutado; pending SPEC-010 + PSA del interruptor.
 
 ## 2. Módulos y entregables
 
 | # | Módulo | Spec | Estado |
 |---|---|---|---|
 | 0 | Documentación de arranque (AGENT.md, ARCHITECTURE.md, 4 vivos) | — | ✅ completada |
-| 1 | Autenticación (dueño único) | SPEC-001 | 🔄 API verificada a mano; **falta suite de 15 AC** |
+| 1 | Autenticación (dueño único) | SPEC-001 | 🔨 implementada (suite 21/21, UI mínima de login, PSA del interruptor pendiente de DCA) |
 | 2 | Cuentas (efectivo/débito/crédito) | SPEC-002 | ⏳ |
 | 3 | Categorías (gasto/ingreso, jerárquicas) | SPEC-003 | ⏳ |
 | 4 | Transacciones (gastos e ingresos) | SPEC-004 | ⏳ |
@@ -38,7 +38,7 @@
 
 | Suite | Resultado | Comando |
 |---|---|---|
-| Unit + integración | no implementado | `npm test` |
+| Unit + integración | **21 en verde, 0 en rojo** (~1.3 s) | `npm test` |
 | E2E (Playwright) | no implementado | `npm run test:e2e` |
 | Consistencia de documentos | **implementado** (a validar en cada cierre) | `npm run check:docs` |
 
@@ -53,18 +53,21 @@
   infraestructura en `CHECKPOINT.md` produce `FAIL` y salida `1`; sin ellos, salida `0`.
 - **Checkpoint manual (17:00)**: Paso 0 + Fase A + Fase B verificadas en vivo; defecto real de
   `cookiePath` corregido; suite y UI pendientes. Archivo: `context-checkpoints/ITER-001-20260920-1700.md`.
+- **Checkpoint (17:32)**: Fase C realizada — SPA mínima de login (index.html, CSS mobile-first, cliente
+  con rutas relativas, controlador, vistas con escape), router estático del servidor con protección anti-traversal
+  (solo `.js` en `/src`), control de acceso a directorios por lista cerrada. Verificada en vivo y
+  `npm test` (21/21 en verde, 1.3 s). Interruptor de despliegue corregido (PSA pendiente de DCA).
 
 ## 5. Próximo paso (uno, verificable)
 
-Escribir y poner en verde la **suite de tests de SPEC-001** (`tests/run-all.js` + 8 archivos, 15 AC),
-luego la **UI mínima de login** (Fase C) y cerrar ITER-001 con commit + etiqueta.
+Cerrar ITER-001: **interruptor de despliegue** (el cambio `package.json` que separa `npm start` prod de `npm run dev` con migraciones) queda con DCA aquí y se documenta antes del próximo commit a `docs/`; luego actualizar README de specs, `PROJECT_STATE.md`, `QA_RESULTS.md`, `SESSION.md`, crear checkpoint final, commit + etiqueta `v0.1.0-iter001`; luego proponer ITER-002.
 
 > ✅ Aprobada la SPEC-001 (2026-09-20). Orden corregido en `docs/specs/README.md`: auth primero
 > (puerta de entrada) y tipos de cambio en ITER-002.
 
 ## 6. Riesgos de trabajo
 
-*(Los riesgos de infraestructura —disco, servicios, red— viven en `docs/Context_live.md`.)*
+Los riesgos de infraestructura —disco, servicios, red— viven en `docs/Context_live.md`.
 
 | Riesgo | Impacto | Mitigación |
 |---|---|---|
@@ -73,6 +76,7 @@ luego la **UI mínima de login** (Fase C) y cerrar ITER-001 con commit + etiquet
 | Fuente de cotización de terceros (gratuita) | tasa no disponible | Banguat como secundaria + carry-forward + override manual |
 | Moneda base GTQ con gastos en USD | redondeo acumulado | aritmética entera con `rate_micro` y redondeo half-up |
 | Divergencia entre `CHECKPOINT.md` y `Context_live.md` | decisiones sobre datos falsos | contrato de 7 reglas + `npm run check:docs` |
+| **Interruptor de despliegue recién corregido** | regresión accidental al desplegar | **cuarentena**: coroutine corrección + DCA + PSA antes de próximo commit a `docs/`. X-ref checkpoint 20260920-1732. |
 
 ## 7. Bloqueadores
 
