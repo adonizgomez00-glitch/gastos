@@ -1,0 +1,26 @@
+{
+  "name": "gastos",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "App en linea para administrar gastos personales (GTQ/USD) - Node 22 + node:sqlite + MVC vanilla",
+  "license": "UNLICENSED",
+  "engines": {
+    "node": ">=22.5.0"
+  },
+  "scripts": {
+    "start": "node --disable-warning=ExperimentalWarning server/index.js",
+    "dev": "node --disable-warning=ExperimentalWarning --watch server/index.js",
+    "migrate": "node --disable-warning=ExperimentalWarning scripts/migrate.js",
+    "user:create": "node --disable-warning=ExperimentalWarning scripts/create-user.js",
+    "rates:refresh": "node --disable-warning=ExperimentalWarning scripts/rates-refresh.js",
+    "backup:db": "bash scripts/backup-db.sh",
+    "context:live": "bash scripts/gen-context-live.sh",
+    "test": "node tests/run-all.js",
+    "test:e2e": "node tests/e2e/run-e2e.js",
+    "check:docs": "node scripts/check-docs-consistency.js"
+  },
+  "devDependencies": {
+    "playwright": "^1.61.1"
+  }
+}

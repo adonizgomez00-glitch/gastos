@@ -1,0 +1,27 @@
+# Dependencias
+node_modules/
+
+# Datos y estado local (NUNCA versionar la base de datos)
+data/*
+!data/.gitkeep
+*.db
+*.db-wal
+*.db-shm
+
+# Secretos
+.env
+.env.*
+!.env.example
+
+# Estado vivo de infraestructura (regla dura de ~/Config-System: el inventario de infra no se publica)
+docs/Context_live.md
+
+# Backups
+backups/*
+!backups/.gitkeep
+
+# Logs
+*.log
+
+# Sistema
+.DS_Store
