@@ -1,13 +1,17 @@
 import { randomUUID } from 'node:crypto'
 import { AppError, NotFoundError } from '../utils/errors.js'
-import { assertCents, assertCurrency } from '../utils/money.js'
+import { assertCents, assertCurrency, divideRoundHalfUp, convertCents } from '../utils/money.js'
+import { withTransaction } from '../database/sqlite.js'
 import { SUPPORTED_PAIR } from './RateService.js'
 
-/** Kinds admitidos por SPEC-004 §4.1. */
+/** Kinds admitidos por SPEC-004 §4.1 (expense/income). Transferencias son SPEC-005. */
 export const TRANSACTION_KINDS = ['expense', 'income']
 
 /** Moneda base del sistema. Las tasas se resuelven contra ella. */
 const BASE_CURRENCY = 'GTQ'
+
+/** Escala de tasas en micro unidades (I-02). */
+const RATE_SCALE = 1_000_000
 
 /** Lanza un error 422 con codigo de negocio (AGENT.md §9.4). */
 function validationError(message, code) {
@@ -30,13 +34,15 @@ function validationError(message, code) {
 export class TransactionService {
   /**
    * @param {object} deps
+   * @param {import('node:sqlite').DatabaseSync} deps.db conexión para transacciones atómicas
    * @param {import('../repositories/TransactionRepository.js').TransactionRepository} deps.transactionRepository
    * @param {import('../repositories/AccountRepository.js').AccountRepository} deps.accountRepository
    * @param {import('../repositories/CategoryRepository.js').CategoryRepository} deps.categoryRepository
    * @param {import('../repositories/AuditRepository.js').AuditRepository} deps.auditRepository
    * @param {import('./RateService.js').RateService} deps.rateService
    */
-  constructor({ transactionRepository, accountRepository, categoryRepository, auditRepository, rateService }) {
+  constructor({ db, transactionRepository, accountRepository, categoryRepository, auditRepository, rateService }) {
+    this._db = db
     this._transactions = transactionRepository
     this._accounts = accountRepository
     this._categories = categoryRepository
@@ -248,6 +254,200 @@ export class TransactionService {
   }
 
   /**
+   * Crea una transferencia de dos patas enlazadas (SPEC-005).
+   * Ambas patas comparten `transfer_group_id` y el mismo `amount_base_cents` (I-04).
+   * @param {object} input `{ spaceId, userId, fromAccountId, toAccountId, amountCents, currency?, occurredOn?, note? }`
+   * @returns {Promise<{transferGroupId: string, legs: object[]}>}
+   */
+  async createTransfer({ spaceId, userId = null, fromAccountId, toAccountId, amountCents, currency, occurredOn, note }) {
+    if (!fromAccountId || !toAccountId || fromAccountId === toAccountId) {
+      throw validationError('La cuenta de origen y la de destino deben ser distintas', 'SAME_ACCOUNT')
+    }
+
+    const from = await this._accounts.findById(spaceId, fromAccountId)
+    if (!from) throw new NotFoundError('La cuenta de origen no existe en este espacio')
+    if (from.archived) {
+      throw validationError('La cuenta de origen esta archivada', 'ACCOUNT_ARCHIVED')
+    }
+
+    const to = await this._accounts.findById(spaceId, toAccountId)
+    if (!to) throw new NotFoundError('La cuenta de destino no existe en este espacio')
+    if (to.archived) {
+      throw validationError('La cuenta de destino esta archivada', 'ACCOUNT_ARCHIVED')
+    }
+
+    const amount = validateAmount(amountCents)
+    const date = validateOccurredOn(occurredOn || todayBusinessDate())
+    const notes = note === undefined ? null : validateNotes(note)
+
+    const fromCurrency = from.currency
+    const toCurrency = to.currency
+    if (currency !== undefined && currency !== null && currency !== '') {
+      const requested = validateCurrency(currency)
+      if (requested !== fromCurrency) {
+        throw validationError(
+          `La moneda debe ser la de la cuenta de origen (${fromCurrency})`,
+          'CURRENCY_MISMATCH'
+        )
+      }
+    }
+
+    const groupId = randomUUID()
+    const rateFields = await this._transferRateFields({
+      amount,
+      fromCurrency,
+      toCurrency,
+      occurredOn: date
+    })
+
+    // Monto en la moneda de cada pata; amount_base_cents idéntico en ambas (I-04).
+    let fromAmount
+    let toAmount
+    let amountBaseCents
+    if (fromCurrency === toCurrency) {
+      fromAmount = amount
+      toAmount = amount
+      amountBaseCents = rateFields.fxRateMicro === null
+        ? amount
+        : convertCents(amount, rateFields.fxRateMicro)
+    } else if (fromCurrency === BASE_CURRENCY) {
+      // GTQ → USD: base = monto origen; destino en USD con la tasa congelada.
+      fromAmount = amount
+      amountBaseCents = amount
+      toAmount = divideRoundHalfUp(amount * RATE_SCALE, rateFields.fxRateMicro)
+    } else {
+      // USD → GTQ: base = conversión del origen; destino recibe el mismo valor base.
+      fromAmount = amount
+      amountBaseCents = convertCents(amount, rateFields.fxRateMicro)
+      toAmount = amountBaseCents
+    }
+
+    const now = new Date().toISOString()
+    const baseLeg = {
+      spaceId,
+      kind: 'transfer',
+      categoryId: null,
+      amountBaseCents,
+      rateDate: rateFields.rateDate,
+      rateSource: rateFields.rateSource,
+      fxRateMicro: rateFields.fxRateMicro,
+      occurredOn: date,
+      description: '',
+      notes,
+      transferGroupId: groupId,
+      refundOf: null,
+      createdBy: userId,
+      now
+    }
+
+    return withTransaction(this._db, () => {
+      const origin = this._transactions.create({
+        ...baseLeg,
+        id: randomUUID(),
+        accountId: from.id,
+        amountCents: fromAmount,
+        currency: fromCurrency,
+        transferDirection: 'out'
+      })
+      const destination = this._transactions.create({
+        ...baseLeg,
+        id: randomUUID(),
+        accountId: to.id,
+        amountCents: toAmount,
+        currency: toCurrency,
+        transferDirection: 'in'
+      })
+
+      this._audit.record({
+        spaceId, userId, entity: 'transactions', entityId: origin.id,
+        action: 'create', after: origin
+      })
+      this._audit.record({
+        spaceId, userId, entity: 'transactions', entityId: destination.id,
+        action: 'create', after: destination
+      })
+
+      return { transferGroupId: groupId, legs: [origin, destination] }
+    })
+  }
+
+  /**
+   * Lista transferencias agrupadas por `transferGroupId` (AC-11).
+   * @param {object} input `{ spaceId, from?, to? }`
+   * @returns {Array<{transferGroupId: string, legs: object[]}>}
+   */
+  listTransfers({ spaceId, from, to }) {
+    const rows = this._transactions.listTransfers(spaceId, { from, to })
+    const groups = new Map()
+    for (const leg of rows) {
+      const key = leg.transferGroupId
+      if (!groups.has(key)) groups.set(key, [])
+      groups.get(key).push(leg)
+    }
+    return [...groups.entries()].map(([transferGroupId, legs]) => ({ transferGroupId, legs }))
+  }
+
+  /**
+   * Borra ambas patas de una transferencia en una sola transacción (AC-12).
+   * @param {object} input `{ spaceId, userId?, groupId }`
+   * @returns {{ deleted: true, transferGroupId: string, legsRemoved: number }}
+   */
+  deleteTransfer({ spaceId, userId = null, groupId }) {
+    const legs = this._transactions.findByTransferGroup(spaceId, groupId)
+    if (legs.length === 0) {
+      throw new NotFoundError('La transferencia no existe en este espacio')
+    }
+
+    return withTransaction(this._db, () => {
+      for (const leg of legs) {
+        this._audit.record({
+          spaceId, userId, entity: 'transactions', entityId: leg.id,
+          action: 'delete', before: leg, after: null
+        })
+      }
+      const removed = this._transactions.deleteByTransferGroup(spaceId, groupId)
+      return { deleted: true, transferGroupId: groupId, legsRemoved: removed }
+    })
+  }
+
+  /**
+   * Resuelve los campos de tasa congelada para una transferencia (I-03).
+   * Misma moneda GTQ→GTQ no consulta tasa; el resto exige tasa o rechaza.
+   */
+  async _transferRateFields({ amount, fromCurrency, toCurrency, occurredOn }) {
+    if (fromCurrency === toCurrency && fromCurrency === BASE_CURRENCY) {
+      return { fxRateMicro: null, rateDate: null, rateSource: null }
+    }
+    if (fromCurrency === toCurrency) {
+      // Misma moneda no base (USD→USD): se necesita tasa para amount_base_cents.
+      const rate = await this._rateService.requireRate({
+        baseCurrency: fromCurrency,
+        quoteCurrency: BASE_CURRENCY,
+        rateDate: occurredOn,
+        allowFetch: true
+      })
+      return {
+        fxRateMicro: Number(rate.rateMicro),
+        rateDate: rate.rateDate || occurredOn,
+        rateSource: rate.source
+      }
+    }
+    // Monedas distintas: par USD/GTQ (único soportado con conversión).
+    const [nonBase] = [fromCurrency, toCurrency].filter((c) => c !== BASE_CURRENCY)
+    const rate = await this._rateService.requireRate({
+      baseCurrency: nonBase,
+      quoteCurrency: BASE_CURRENCY,
+      rateDate: occurredOn,
+      allowFetch: true
+    })
+    return {
+      fxRateMicro: Number(rate.rateMicro),
+      rateDate: rate.rateDate || occurredOn,
+      rateSource: rate.source
+    }
+  }
+
+  /**
    * Resuelve la tasa solo cuando la moneda es distinta a la base (AC-02, AC-03, AC-05).
    * Para GTQ (base) no consulta nada y deja los campos nulos (AC-02).
    *
@@ -316,4 +516,9 @@ export function validateDescription(value) {
 
 export function validateNotes(value) {
   return value === undefined ? null : String(value || '').trim().slice(0, 500) || null
+}
+
+/** Fecha de negocio `YYYY-MM-DD` en America/Guatemala (I-09). */
+function todayBusinessDate() {
+  return new Date().toLocaleDateString('en-CA', { timeZone: 'America/Guatemala' })
 }

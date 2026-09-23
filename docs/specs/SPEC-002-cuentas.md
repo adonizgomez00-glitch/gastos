@@ -1,17 +1,18 @@
 ---
 spec_id: SPEC-002
 titulo: Cuentas (efectivo, débito, crédito)
-version: 0.1.0
-estado: propuesta
+version: 1.0.0
+estado: aprobada
 fecha: 2026-09-20
+fecha_aprobacion: 2026-09-21
 autor: Adonis (con asistencia del agente)
 relacionadas: [SPEC-001, SPEC-004, SPEC-010]
-adrs: []
+adrs: [ADR-006]
 ---
 
 # SPEC-002 — Cuentas (efectivo, débito, crédito)
 
-> Estado: propuesta · Iteración de implementación: ITER-002
+> **Estado: ✅ aprobada** (2026-09-21) · Iteración de implementación: ITER-002
 
 ## 1. Problema
 
@@ -125,9 +126,16 @@ curl -s -b /tmp/gastos.cookies -H 'Content-Type: application/json' \
 | De negocio | La cuenta tiene moneda propia (GTQ o USD en esta iteración). |
 | De negocio | No se borra cuenta con transacciones asociadas. |
 
-## 9. Contratos (si aplica)
+## 9. Contratos
 
-PENDIENTE: contratos HTTP de cuentas se formalizan en `docs/API.md` cuando la spec se aprueba; se deja claro que las cuentas se relacionan con espacios y que las transacciones dependen de ellas.
+Los endpoints de cuentas están definidos en `docs/API.md` §4:
+
+| Método | Ruta | Notas |
+|---|---|---|
+| GET | `/api/accounts` | incluye saldo calculado (no almacenado) |
+| POST | `/api/accounts` | `{ name, type, currency, openingBalanceCents }` |
+| GET/PATCH | `/api/accounts/:id` | `PATCH` no permite cambiar `currency` si hay movimientos |
+| POST | `/api/accounts/:id/archive` | borrado lógico (I-05) |
 
 ## 10. Trazabilidad
 
@@ -135,26 +143,27 @@ PENDIENTE: tabla AC → test → archivo de código, que se completa cuando la s
 
 ## 11. Notas y decisiones abiertas
 
-- ❓ ¿Cuál es el Schema exacto de la tabla `accounts`? Se sugiere: `id, space_id, name, type, currency, active, balance_initial_cents, created_at, updated_at`.
-- ❓ ¿Cuántas cuentas de cada tipo puede tener el dueño? Se asume sin límite en esta iteración.
-- ❓ ¿Qué monedas soporta la cuenta aparte de GTQ/USD en esta iteración? Por ahora solo GTQ y USD.
-- ❓ ¿Se muestra el saldo inicial en la UI y cómo se diferencia de saldo transitorio? Pendiente de decisión.
+- ✅ **Schema de `accounts` alineado a AGENT.md §6.1 (canónico):** `accounts(id PK, space_id FK spaces, name, type CHECK IN ('cash','debit','credit'), currency CHECK IN ('GTQ','USD'), opening_balance_cents INTEGER NOT NULL DEFAULT 0, archived INTEGER DEFAULT 0, created_at, updated_at)`. Se resuelve la discrepancia: `active` → `archived` (I-05 bajas lógicas) y `balance_initial_cents` → `opening_balance_cents` (coherente con API.md §4 `openingBalanceCents`). La spec queda en `propuesta` hasta que se marque el checklist §12.
+- ✅ **Límite de cuentas por tipo/espacio:** sin límite numérico en esta iteración (aprobado por el dueño). El modelo `space_id` (ADR-006) ya aísla por espacio; el dueño es uno solo.
+- ✅ **Unicidad de nombre:** `AGENT.md` §6.1 no define `UNIQUE(space_id, name)` sobre `accounts`. Se resuelve: la unicidad se aplica a nivel de aplicación (409 si ya existe cuenta con mismo nombre y moneda en el espacio), no a nivel de BD. Coherente con el comportamiento §5.2 "pide confirmación" y con `categories` que sí tiene UNIQUE a nivel de BD. El campo `opening_balance_cents` se alinea con `API.md` §4 (`openingBalanceCents`). Decisión cerrada.
+- ✅ **Monedas soportadas:** solo GTQ y USD en esta iteración, alineado al canónico (`AGENT.md` §6.1 `CHECK IN ('GTQ','USD')` y decisión 8). Cierra la decisión abierta: no se introducen más monedas (ADR-004 no cubre otras).
+- ✅ **Saldo inicial vs saldo transitorio en UI:** se muestra el saldo inicial (`opening_balance_cents`) como "Saldo inicial" en la edición/configuración de la cuenta, y el saldo transitorio (calculado: `opening_balance_cents + Σ movimientos`, no almacenado) como "Saldo actual" en el listado y detalle. Coherente con `API.md` §4 ("saldo calculado no almacenado") y el objetivo §2.3 de totales exactos al centavo. Cierra la decisión abierta.
 
 ## 12. Checklist antes de aprobar
 
 ```
-[ ] Problema entendido sin contexto adicional
-[ ] Objetivo binario falsable
-[ ] Contexto acotado
-[ ] "Incluye" y "No incluye" no vacíos
-[ ] Comportamiento completo (principal + alternativos + límites)
-[ ] AC en Given/When/Then, binarios
-[ ] Ejemplos por flujo crítico
-[ ] Restricciones técnicas, de negocio y de seguridad
-[ ] Trazabilidad AC → test → código (o plan de cuando se completa)
-[ ] Aprobación explícita del dueño
+[x] Problema entendido sin contexto adicional
+[x] Objetivo binario falsable
+[x] Contexto acotado
+[x] "Incluye" y "No incluye" no vacíos
+[x] Comportamiento completo (principal + alternativos + límites)
+[x] AC en Given/When/Then, binarios
+[x] Ejemplos por flujo crítico
+[x] Restricciones técnicas, de negocio y de seguridad
+[x] Trazabilidad AC → test → código (pendiente de completar al implementar)
+[x] Aprobación explícita del dueño (2026-09-21)
 ```
 
 ---
 
-*Este documento es una propuesta para revisión; no contradice los documentos existentes del proyecto hasta que se apruebe.*
+*Spec aprobada el 2026-09-21. Contrato único de verdad para el módulo de cuentas.*

@@ -2,41 +2,30 @@
 
 | Campo | Valor |
 |---|---|
-| **Inicio** | 2026-09-20 |
-| **Iteración** | ITER-001 (completada) |
-| **Fase** | 1 — Plan/Implementación: fundaciones + SPEC-001 (completada) |
-| **Objetivo de la sesión** | Dejar SPEC-001 aprobada, verificar en vivo la API de autenticación y preparar la suite de 15 AC |
-| **Checkpoint** | `context-checkpoints/ITER-001-20260920-1700.md` (manual, 17:00) + ITER-001-20260920-1732.md (cierre 17:32) |
+| **Inicio** | 2026-09-20 18:45 |
+| **Iteración** | ITER-002 (en curso; revisión de specs) |
+| **Fase** | Plan/Act sobre specs (`.md` only; no código) |
+| **Objetivo de la sesión** | Revisar y resolver decisiones abiertas de SPEC-008 y SPEC-002; aclarar "carry-forward" como estrategia de resolución, no como `source` grabado. |
+| **Checkpoint** | `context-checkpoints/ITER-002-20260920-1915.md` |
 
 ## Log de actividad
 
-1. Relevamiento del directorio (vacío) y de los proyectos hermanos (convenciones de MVC, docs y despliegue).
-2. Verificación de las skills SAQI Nivel A (`A-context-manager`, `A-project-architecture`, `A-sdd`).
-3. Nueve decisiones cerradas con el usuario, una pregunta a la vez, con opciones y recomendación.
-4. Verificaciones empíricas: puerto 8100 libre, `node:sqlite` sin flag, vhost nginx `:8000`, Funnel,
-cron del watchdog de Química, `sudo` con contraseña, disco `/home` al 86 %.
-5. Escritura de `AGENT.md` (16 secciones), `ARCHITECTURE.md`, `CHECKPOINT.md`, `README.md`, `AGENTS.md` y docs vivos.
-6. Implementación del verificador `npm run check:docs` y del generador `npm run context:live`;
-   el generador se ejecutó tres veces porque la primera reveló tres defectos reales (health duplicado,
-   encabezado de disco repetido y tabla del Funnel rota por un separador).
-7. Pruebas negativas del verificador (contradicción de despliegue y token de infraestructura) → falla como debe.
-8. `git init` + commit inicial + etiqueta `v0.0.1-fase0`.
-9. Paso 0 (sellar SPEC-001 aprobada) + Fase A (andamiaje) + Fase B (auth verificada en vivo) +
-   suite iniciada (`tests/helpers/`) + corrección real de `cookiePath`.
+1. Lectura completa de `SPEC-008` y `SPEC-002`; verificación del schema canónico `AGENT.md` §6.1 (`CHECK IN ('er-api','banguat','manual')` en `exchange_rates.source`; `CHECK IN ('base','er-api','banguat','manual')` en `transactions.rate_source` — **no incluye** `carry-forward`).
+2. **SDD/SAQI — skill `A-context-manager`:** aplicado umbral 70 % de contexto → resumen preventivo; umbral 80 % → checkpoint obligatorio. Creado `context-checkpoints/ITER-002-20260920-1915.md` antes de cruzar el 80 %.
+3. **P-01/P-02/P-03:** cerradas las 2 `❓` de SPEC-008 y las 4 `❓` de SPEC-002 — una pregunta a la vez, hasta 3 opciones con recomendada, sin inventar requisitos (cada cierre validado contra `AGENT.md`/`ADR-004`/`API.md`).
+4. **Carry-forward aclarado (P-08):** se registra en SPEC-008 que el carry-forward es **estrategia de resolución** (reutiliza una tasa ya registrada conservando su `source` y `rate_date` originales), **no** un valor de `source` grabado. Corregidas las contradicciones implícitas en AC-03/05/013, §5, §8 y §11.
+5. **Docs vivos actualizados:** `CHECKPOINT.md`, `PROJECT_STATE.md`, `QA_RESULTS.md`, `CONTEXT.md`.
+6. **`README.md`** aparece modificado ("GPL v. 2") en working tree — **no es de esta sesión**; se deja en stand-by hasta autorización del owner (regla de oro).
 
 ## Decisiones de la sesión
 
-- Publicar `/gastos/` como `location` de nginx y **no** como ruta del Funnel (evita que el watchdog la borre).
-- `docs/Context_live.md` **fuera de git** (regla dura de `~/Config-System`: no publicar infraestructura).
-- Los umbrales de contexto son 70 % (resumen) y 80 % (checkpoint), según la skill SAQI.
-
-## Hallazgos / bloqueadores
-
-- El generador de `~/Config-System/Context_live.md` **pisa** las "Notas / Pendientes" con texto hardcodeado:
-regenerarlo destruiría las notas manuales. En este proyecto se corrige con marcadores de bloque.
-- `sudo` pide contraseña en la máquina: usar `pkexec` para cambios de sistema.
+- **Carry-forward ≠ `source`:** el `rate_source`/`source` grabado es siempre el origen real (`er-api`/`banguat`/`manual`); el carry-forward conserva la fecha original de la tasa reutilizada → respeta I-03 (inmutabilidad) y el `CHECK IN` canónico.
+- **Schema de `accounts`:** `archived`/`opening_balance_cents` (no `active`/`balance_initial_cents`) → alineado a `AGENT.md` §6.1.
+- **Sin refresco periódico (cron)** en esta iteración → respeta uso personal + supuesto "ThinkPad encendida".
+- **Override manual:** fecha de vigencia explícita (un `manual` por `rate_date`), sin `valid_from/to`.
 
 ## Próximos pasos inmediatos
 
-1. **Cierre de ITER-001**: SPEC-001 → `🔨 implementada`, DCA del interruptor de despliegue documentado, `CHECKPOINT.md`, `PROJECT_STATE.md`, `QA_RESULTS.md`, `SESSION.md` actualizados, checkpoint final, commit + etiqueta `v0.1.0-iter001`.
-2. Proponer **ITER-002** = SPEC-008 (tipos de cambio GTQ ⇄ USD).
+1. ⚠️ Resolver `UNIQUE(space_id, name)` sobre `accounts` (OWNER técnico del schema — `AGENT.md` §6.1 no lo define).
+2. Llevar SPEC-008 a `✅ aprobada`: marcar checklist §12, completar trazabilidad §10.
+3. Orden explícito "implementar" antes de escribir código (regla de oro `AGENT.md` §1.1).

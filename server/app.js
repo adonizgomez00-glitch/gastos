@@ -6,6 +6,7 @@ import { authRoutes } from './routes/auth.js'
 import { accountRoutes } from './routes/accounts.js'
 import { categoryRoutes } from './routes/categories.js'
 import { transactionRoutes } from './routes/transactions.js'
+import { transferRoutes } from './routes/transfers.js'
 import { rateRoutes } from './routes/rates.js'
 import { staticRoutes } from './routes/static.js'
 
@@ -26,6 +27,7 @@ export function createApp(deps) {
     ...accountRoutes(deps),
     ...categoryRoutes(deps),
     ...transactionRoutes(deps),
+    ...transferRoutes(deps),
     ...rateRoutes(deps),
     ...staticRoutes(deps)
   ]

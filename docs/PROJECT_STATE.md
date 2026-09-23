@@ -1,7 +1,7 @@
 # PROJECT_STATE.md — Gastos
 
-**Iteración actual:** ITER-001 (en curso) · **Fase:** 1 Plan/Implementación · **Código:** Fase A+B verificadas en vivo; falta suite + UI
-**Última actualización:** 2026-09-20 17:00 (checkpoint manual)
+**Iteración actual:** ITER-005 (completada) · **Fase:** implementación (red → green → refactor)
+**Última actualización:** 2026-09-22 (cierre ITER-005 — suite 90/90)
 
 ---
 
@@ -9,10 +9,10 @@
 
 | Campo | Valor |
 |---|---|
-| Objetivo | Implementar fundaciones + SPEC-001 con sus 15 AC en tests y UI mínima de login |
-| Estado | 🔨 completado (Fase A, B y C verificadas; suite 21/21; DCA del interruptor de despliegue documentado) |
-| Spec activa | `docs/specs/SPEC-001-autenticacion.md` (**implementada**) |
-| Despliegue | pendiente (documentado, no ejecutado) |
+| Objetivo | ITER-005: implementar y testear SPEC-005 transferencias |
+| Estado | ✅ **completada** — suite **90/90 en verde**, `check:docs` 0 avisos |
+| Spec activa | SPEC-001 ✅ · SPEC-002 ✅ · SPEC-003 ✅ · SPEC-004 ✅ · **SPEC-005 ✅ (15/15)** · SPEC-008 ✅ · SPEC-006/007 ← próxima |
+| Despliegue | pendiente (documentado, no ejecutado; SPEC-010) |
 
 ## 2. Tareas
 
@@ -28,32 +28,28 @@
 - [x] Verificador `npm run check:docs` implementado y **validado con pruebas negativas** (falla al detectar contradicción).
 - [x] `npm run context:live` implementado y ejecutado: genera el estado vivo real de infraestructura.
 - [x] Repositorio git inicializado; etiqueta `v0.0.1-fase0`.
+- [x] ITER-001 cerrado: SPEC-001 aprobada + implementada; suite 21/21; Fase A+B+C verificadas en vivo; DCA del interruptor de despliegue documentado; `cookiePath` corregido (DEF-001).
+- [x] **ITER-004 cerrado:** SPEC-002 (10 AC) + SPEC-003 (10 AC) + SPEC-008 (15 AC) + **SPEC-004 (19 AC)** implementadas y testeadas; suite **75/75**; DEF-002 y DEF-003 corregidos; `Context_live` fresco.
+- [x] **ITER-005 cerrado:** **SPEC-005 (15 AC)** implementada y testeada; suite **90/90**; typo AC-02 corregido en la spec; `check:docs` 0 avisos.
 
-### 🔄 En curso (ITER-001)
+### 🔄 En curso
 
-- [x] **Aprobar** `SPEC-001-autenticacion.md` (aprobada 2026-09-20).
-- [x] Fase A: config, utilidades, `sqlite.js`, migraciones, router, app, bootstrap (verificado en vivo).
-- [x] Fase B: `PasswordService`, repositorios, `AuthService`, middleware, rutas auth/health (verificado en vivo).
-- [x] Corrección real de `cookiePath` (dev `/`, prod `/gastos`).
-- [x] Suite de 15 AC automatizada: `tests/run-all.js` + 9 archivos, **21 en verde, 0 en rojo, 1.3 s**.
-- [x] Fase C: UI mínima de login (el test de rutas relativas ya existe y hoy pasa en modo registrado).
+- (nada — esperando orden para la siguiente iteración)
 
-### ⏳ Pendientes (bloqueadas por la orden de "implementar")
+### ⏳ Pendientes
 
-- [ ] Migraciones + `sqlite.js` + bootstrap (SPEC-001/010).
-- [ ] Autenticación y sesión (SPEC-001).
-- [ ] Cuentas, categorías, transacciones, transferencias (SPEC-002..005).
-- [ ] Presupuestos y recurrentes (SPEC-006..007).
-- [ ] Tipos de cambio (SPEC-008).
-- [ ] Reportes (SPEC-009).
-- [ ] Despliegue y publicación en línea (SPEC-010).
+- [ ] **SPEC-006 presupuestos + SPEC-007 recurrentes** ← prioridad
+- [ ] SPEC-009 reportes
+- [ ] SPEC-010 despliegue y publicación en línea
+- [ ] E2E con Playwright (`npm run test:e2e`)
+- [ ] Commitear el trabajo de ITER-004/005 (solo con orden explícita)
 
 ## 3. Métricas
 
 | Métrica | Valor actual | Objetivo |
 |---|---|---|
-| Cobertura de criterios de aceptación con test | **100 % de SPEC-001** (15 AC en 21 pruebas) | 100 % |
-| Tests unitarios + integración | **21** (20 de API/dominio + 1 de cliente) | ≥ 1 por AC |
+| Cobertura de criterios de aceptación con test | **100 %** de SPEC-001/002/003/004/005/008 (84 AC) | 100 % |
+| Tests unitarios + integración | **90** | ≥ 1 por AC |
 | Tests E2E | 0 | flujos críticos cubiertos |
 | `npm run check:docs` | **pass** (0 contradicciones, 0 avisos) | siempre pass |
 | Defectos abiertos P0/P1 | 0 | 0 |
@@ -62,22 +58,19 @@
 
 | Deuda | Origen | Cuándo se paga |
 |---|---|---|
-| `migrate` / `user:create` / `rates:refresh` son stubs que fallan a propósito | Fase 0 sin código | con la implementación de sus specs |
 | E2E sin implementar (Playwright como devDependency, sin `npm install`) | Fase 0 | al implementar el primer flujo completo |
 | Sin bloqueo de meses cerrados | decisión de alcance | fase 2 |
+| Trabajo ITER-004/005 sin commitear | regla "no commit sin orden" | cuando el dueño lo autorice |
 
 ## 5. Riesgos
 
 Los riesgos de trabajo están en `CHECKPOINT.md` §6; los de infraestructura, en `docs/Context_live.md`.
-Riesgo específico de esta iteración: que las decisiones de Fase 0 se diluyan si se empieza a codificar
-sin spec (mitigado con el gate `SPEC_READY` de `AGENT.md` §14).
 
 ## 6. Próximos pasos
 
-1. Aprobar `SPEC-001-autenticacion.md`.
-2. Recibir la orden explícita de "implementar".
-3. Red → Green → Refactor del módulo de autenticación con sus tests.
-4. Cerrar la iteración actualizando `CHECKPOINT.md`, este archivo y `QA_RESULTS.md`.
+1. **SPEC-006 + SPEC-007** presupuestos y recurrentes.
+2. Luego SPEC-009 reportes → SPEC-010 (despliegue).
+3. Commitear ITER-004/005 cuando el dueño lo autorice.
 
 ## 7. Archivos clave
 
@@ -112,3 +105,5 @@ gastos/
 | 2026-09-20 | Paso 2 completado: suite de 15 AC en verde (21/21) + test de rutas relativas registrado. |
 | 2026-09-20 | Cierre de ITER-001: SPEC-001 → implementada, Fase C realizada (UI mínima de login), suite 21/21, DCA del interruptor de despliegue documentado. |
 | 2026-09-20 | Cierre de la documentación de arranque: repo git + tag `v0.0.1-fase0`, `check:docs` validado y `context:live` generado. |
+| 2026-09-20 | Cierre de ITER-001: SPEC-001 → implementada, Fase C realizada (UI mínima de login), suite 21/21, DCA del interruptor de despliegue documentado, DEF-001 (cookiePath) corregido. |
+| 2026-09-20 19:15 | ITER-002: revisión de decisiones abiertas. SPEC-008 ✅ carry-forward como estrategia (alineado a `AGENT.md` §6.1 + ADR-004); SPEC-002 4/4 ❓ cerradas. Checkpoint `ITER-002-20260920-1915.md`.

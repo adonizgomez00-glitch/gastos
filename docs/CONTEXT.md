@@ -110,9 +110,15 @@ Ver `AGENT.md` §12 (idioma, nombres, estilo, commits, formatos). Puntos que se 
 **Causa:** en `~/Config-System` el generador pisa las notas manuales con texto hardcodeado y el archivo
 se edita a mano, quedando desincronizado de su propio script. **Prevención:** marcadores
 `<!-- BEGIN GENERADO -->` / `<!-- END GENERADO -->` + `npm run check:docs` (regla 5 y 7 del contrato).
+- **Fix — SPEC-008:** "carry-forward" aclarado como estrategia de resolución, no como `source` grabado.
+**Causa:** SPEC-008 trataba carry-forward como fuente válida, pero `AGENT.md` §6.1 define
+`CHECK IN ('er-api','banguat','manual')` (también en `transactions.rate_source`), lo que impediría
+grabar `carry-forward`. **Prevención:** el carry-forward reutiliza una tasa ya registrada conservando
+su `source` y `rate_date` originales; se corrigió AC-03/05/013, §5, §8, §11 de la spec para reflejarlo.
 
 ## 11. Changelog
 
 | Fecha | Cambio |
 |---|---|
 | 2026-09-20 | Creación: dominio, glosario, reglas, módulos, RBAC y patrones. |
+| 2026-09-20 19:15 | ITER-002: aclarado "carry-forward = estrategia, no `source`" en SPEC-008; cerradas decisiones abiertas de SPEC-008 (2) y SPEC-002 (4). Docs vivos actualizados. |

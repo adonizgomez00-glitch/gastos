@@ -76,7 +76,7 @@ Sin autenticación; **no** expone datos del usuario.
 
 | Método | Ruta | Notas |
 |---|---|---|
-| POST | `/api/transfers` | `{ fromAccountId, toAccountId, amountMinor, currency, occurredOn?, note? }` → crea dos patas con el mismo `transferGroupId` |
+| POST | `/api/transfers` | `{ fromAccountId, toAccountId, amountCents, currency, occurredOn?, note? }` → crea dos patas con el mismo `transferGroupId` |
 | GET | `/api/transfers?from=&to=` | agrupadas por `transferGroupId` |
 | DELETE | `/api/transfers/:groupId` | elimina las dos patas en una sola transacción |
 
@@ -101,9 +101,15 @@ Sin autenticación; **no** expone datos del usuario.
 
 | Método | Ruta | Notas |
 |---|---|---|
-| GET | `/api/rates?base=USD&quote=GTQ` | última tasa conocida + `rateDate` + `source` |
-| POST | `/api/rates/refresh` | fuerza consulta a las fuentes (primaria → secundaria) |
-| PUT | `/api/rates/manual` | fija una tasa manual para una fecha (`source = manual`) |
+| GET | `/api/rates?base=USD&quote=GTQ` | última tasa conocida + `rateDate` + `source` (`er-api`/`banguat`/`manual`). Si no hay tasa fresca, el `source` refleja el origen real de la tasa devuelta (p. ej. `er-api` de un día hábil, usada en carry-forward). |
+| POST | `/api/rates/refresh` | fuerza la consulta a las fuentes (primaria → secundaria). Persiste en `exchange_rates` con su `source` real y `rate_date`. No es llamado por el registro de transacciones (evita bloqueo). |
+| PUT | `/api/rates/manual` | `{ "rateDate", "fxRateMicro" }` → fija una tasa manual válida **solo para esa `rateDate`** (`source = manual`, `is_manual = 1`). Requiere sesión de dueño. No hay `valid_from`/`valid_to`: aplica por día. |
+| GET (opcional diagnóstico) | `/api/rates/refresh-log?base=USD&quote=GTQ` | historial de `exchange_rates` con `source`, `rateDate`, `fetchedAt` y `is_manual`. |
+
+**Notas de modelo:**
+- `base=USD`, `quote=GTQ` → `1 USD = fxRateMicro / 1_000_000 GTQ`.
+- **Carry-forward:** estrategia del servidor al resolver la tasa (no es un `source`). Al registrar una transacción, el campo grabado es `rate_source` con el **origen real** (`er-api`/`banguat`/`manual`) y `rate_date` con la **fecha original** de la tasa reutilizada. El API nunca devuelve ni graba `carry-forward` como `source`.
+- **`/api/health`** expone `rates: "ok" (≤24h) | "stale" (>24h) | "missing"`; el refresco al arranque ocurre solo si la última tasa es anterior al día de hoy (ADR-004 §8.4).
 
 ## 11. Reportes (SPEC-009)
 

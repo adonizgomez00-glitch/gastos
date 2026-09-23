@@ -1,9 +1,10 @@
 ---
 spec_id: SPEC-008
 titulo: Tipos de cambio GTQ ⇄ USD
-version: 0.2.0
-estado: propuesta
+version: 1.0.0
+estado: aprobada
 fecha: 2026-09-20
+fecha_aprobacion: 2026-09-21
 autor: Adonis (con asistencia del agente)
 relacionadas: [SPEC-001, SPEC-002, SPEC-003, SPEC-004, SPEC-010]
 adrs: [ADR-003, ADR-004]
@@ -11,7 +12,7 @@ adrs: [ADR-003, ADR-004]
 
 # SPEC-008 — Tipos de cambio GTQ ⇄ USD
 
-> **Estado: 📝 propuesta** (2026-09-20) · Iteración de implementación: **ITER-002**
+> **Estado: ✅ aprobada** (2026-09-21) · Iteración de implementación: **ITER-002**
 
 ## 1. Problema
 
@@ -64,18 +65,20 @@ Esto se construye sobre ADR-003 y ADR-004 ya existentes, así como sobre el mode
 ### 5.1 Flujo principal — obtener tasa para registro
 
 1. El sistema necesita una tasa GTQ↔USD porque la transacción está en una moneda distinta a la base o se requiere conversión.
-2. Intenta obtener tasa del proveedor primario configurado.
-3. Si no responde o la respuesta no es válida, usa el secundario.
-4. Si ambos no responden o no devuelven tasa válida, usa carry-forward si existe y es válido.
-5. Si hay override manual vigente para la moneda/timeframe relevante, usa la override y no consulta proveedores para ese caso.
-6. La tasa seleccionada se guarda junto a la transacción con fecha, fuente y monto convertido congelados.
+2. Si hay una **override manual vigente** para la moneda/fecha relevante, la usa directamente (no consulta proveedores).
+3. Si no hay override para esa fecha, intenta obtener tasa del proveedor primario configurado.
+4. Si no responde o la respuesta no es válida, usa el secundario.
+5. Si ambos no responden o no devuelven tasa válida, usa **carry-forward**: reutiliza la última tasa registrada en `exchange_rates` válida (cualquier `source` ∈ {`er-api`,`banguat`,`manual`}), **conservando su `rate_date` original**.
+6. La tasa seleccionada se guarda junto a la transacción con **fecha (`rate_date`), fuente ORIGINAL (`rate_source` ∈ {`er-api`,`banguat`,`manual`}, nunca `carry-forward`) y monto convertido congelados**. El carry-forward es una estrategia de resolución, no un `source` grabado: se registra siempre el origen real de la tasa reutilizada.
+
+> Regla de oro: **`rate_source` grabado es siempre el origen real de la tasa** (`er-api`/`banguat`/`manual`). El carry-forward NO aparece como valor de `rate_source` ni de `source` (no está en el `CHECK IN` de `AGENT.md` §6.1; ADR-004 lo define como estrategia, no como fuente).
 
 ### 5.2 Flujos alternativos
 
 - **Primario sin respuesta** → pasa a secundario.
 - **Secundario sin respuesta** → pasa a carry-forward.
 - **Sin carry-forward válido** → rechaza la operación por falta de tasa; no registra con tasa inventada.
-- **Override manual vigente** → usa la override y registra que la fuente fue override manual.
+- **Override manual vigente** → usa la override y registra `rate_source = manual` (el origen real).
 - **Tasa para moneda no soportada** → fuera de GTQ/USD se rechaza con mensaje claro; eso se deja para después.
 - **Fecha de vigencia de override** → la override tiene fecha de vigencia; si no cubre el registro, se considera inválida para ese caso y se busca otra fuente.
 
@@ -93,9 +96,9 @@ Esto se construye sobre ADR-003 y ADR-004 ya existentes, así como sobre el mode
 |----|-----------|--------------|---------------|-----------------|
 | AC-01 | Tasa primaria responde | proveedor primario disponible y responde tasa válida | el sistema necesita tasa para una transacción | usa la tasa del primario y la registra con su fuente y fecha |
 | AC-02 | Falla primario, responde secundario | primario sin respuesta o con respuesta no válida, secundario responde tasa válida | el sistema necesita tasa | usa la tasa del secundario y la registra con su fuente y fecha |
-| AC-03 | Ambos proveedores fallan, carry-forward disponible | no hay respuesta válida de proveedores y existe carry-forward válido | el sistema necesita tasa | usa la tasa de carry-forward y la registra con fuente carry-forward |
+| AC-03 | Ambos proveedores fallan, carry-forward disponible | no hay respuesta válida de proveedores y existe carry-forward válido | el sistema necesita tasa | reutiliza la tasa de carry-forward, **registrando `rate_source` como el origen real de esa tasa** (`er-api`/`banguat`/`manual`) y `rate_date` con su fecha original; el carry-forward no se graba como `rate_source` |
 | AC-04 | Ambos proveedores fallan, no hay carry-forward | no hay respuesta válida de proveedores y no hay carry-forward disponible | el sistema necesita tasa | no registra la transacción con tasa inventada; da respuesta clara según regla elegida |
-| AC-05 | Override manual vigente | el dueño tiene una override registrada para la moneda/timeframe relevante | el sistema necesita tasa | usa la override, registra que la fuente fue override manual y no consulta proveedores para ese caso |
+| AC-05 | Override manual vigente | el dueño tiene una override registrada (`source = manual`) para la moneda/fecha relevante | el sistema necesita tasa | usa la override y la registra con `rate_source = manual` (no consulta proveedores para ese caso) |
 | AC-06 | Transacción USD con conversión necesaria | se registra una transacción en USD y se necesita conversión a GTQ | se completa el registro | la transacción queda con amount_cents, currency, fx_rate_micro, amount_base_cents, rate_date, rate_source congelados |
 | AC-07 | Historial inmutable | una transacción registrada tiene tasa y fuente congeladas | cambia la tasa vigente después | la transacción no cambia su tasa; si se quiere otra tasa, es un reporte o registro nuevo |
 | AC-08 | Consulta de tasa vigente | existe al menos una tasa registrada o override vigente | se consulta tasa vigente para GTQ/USD | el sistema devuelve la tasa vigente, su fuente y fecha, o dice que no hay vigente según regla elegida |
@@ -103,7 +106,7 @@ Esto se construye sobre ADR-003 y ADR-004 ya existentes, así como sobre el mode
 | AC-10 | Tasa inválida por carry-forward | carry-forward registrado es 0 o negativo o no numérico | el sistema necesita tasa y llega a carry-forward | lo descarta y aplica la regla de fallo elegida |
 | AC-11 | Transparencia de fuente | una transacción registrada con conversión | se consulta la transacción | se puede saber qué tasa, fuente y fecha se usaron |
 | AC-12 | Override deshabilitado por fecha | la override registrada tiene fecha de vigencia que no cubre el registro | el sistema necesita tasa y llega a la override | la ignora por inválida para ese caso y continúa con proveedores/carry-forward |
-| AC-13 | Rate source distinto para cada fuente | se registra una transacción usando proveedor primario, secundario, carry-forward o override | se consulta la transacción registrada | rate_source refleja correctamente qué fuente se usó |
+| AC-13 | rate_source refleja el origen real usado | se registra una transacción usando override manual, tasa de primario/secundario o carry-forward | se consulta la transacción registrada | `rate_source` refleja el origen real (`er-api`/`banguat`/`manual`); **nunca** vale `carry-forward` (que es estrategia de resolución, no fuente grabada) |
 | AC-14 | Tasa solo GTQ/USD | se intenta usar otra moneda distinta a GTQ o USD para conversión | el sistema intenta operar con esa moneda | se rechaza con mensaje claro; fuera de GTQ/USD se deja para después |
 | AC-15 | Tasa de conversión consistente | se registra una transacción con conversión | se consulta la transacción | los campos de conversión son coherentes entre sí y con la tasa usada |
 
@@ -129,13 +132,13 @@ curl -s -b /tmp/gastos.cookies -H 'Content-Type: application/json' \
 | Técnica | Dinero en centavos; sin `REAL`; sin recalcular tasas históricas; sin inventar tasa |
 | De negocio | GTQ y USD en esta iteración; tasa solo de GTQ↔USD. La tasa primaria se expresa como `1 USD = X GTQ`; por eso el ejemplo muestra `fxRateMicro = 7703054` → `1 USD = 7.703054 GTQ` |
 | De seguridad | Override manual solo la puede registrar el dueño autenticado; las rutas de tasas no exponen datos sensibles |
-| De proveedores | Si no hay fuente válida, se aplica la regla de fallo elegida; carry-forward es fuente válida. Bravo: prueba AC-04. |
-| De modelo | La tasa del proveedor se trata como cualquier otra: si es 0/negativa/no numérica, se descarta y se pasa a la siguiente opción o a la regla de fallo |
-| De modelo | Cada transacción registra `rateSource` que identifica la fuente real usada: proveedor primario, secundario, carry-forward o override |
+| De proveedores | Si no hay fuente válida, se aplica la regla de fallo elegida (rechazar, no inventar). **Carry-forward es estrategia válida de resolución**, pero reutiliza la tasa original cuyo `source` es `er-api`/`banguat`/`manual` (nunca `carry-forward`). Bravo: prueba AC-04. |
+| De modelo | La tasa del proveedor se trata como cualquiera otra: si es 0/negativa/no numérica, se descarta y se pasa a la siguiente opción o a la regla de fallo |
+| De modelo | Cada transacción registra `rate_source` con el **origen real** de la tasa usada: `er-api`/`banguat`/`manual`. El carry-forward no es un `source` grabado (no está en el `CHECK IN` de `AGENT.md` §6.1); al reutilizar una tasa por carry-forward, se conserva el `source` y `rate_date` de origen |
 
-## 9. Contratos (si aplica)
+## 9. Contratos
 
-Los contratos HTTP de tasas se formalizan en `docs/API.md` §10:
+Los contratos HTTP de tasas están definidos en `docs/API.md` §10:
 
 | Método | Ruta | Notas |
 |---|---|---|
@@ -178,30 +181,30 @@ PENDIENTE: tabla de AC → test → archivo de código, que se completa cuando l
 ## 11. Notas y decisiones abiertas
 
 - ✅ **Regla de fallo elegida:** si ambos proveedores fallan y no hay carry-forward, el sistema rechaza la operación por falta de tasa; no registra con tasa inventada.
-- ✅ **Carry-forward es fuente válida** y no se descarta solo por antigüedad en esta iteración.
+- ✅ **Carry-forward es estrategia válida de resolución** (no un `source`): reutiliza la última tasa registrada (`source` ∈ `er-api`/`banguat`/`manual`) con su `rate_date` original; no se descarta solo por antigüedad en esta iteración.
 - ✅ **Override manual:** registra la fecha de vigencia; si no cubre el registro, se ignora para ese caso.
-- ✅ **Cada transacción registra `rateSource`** que identifica la fuente real usada.
+- ✅ **Cada transacción registra `rate_source`** con el origen real de la tasa usada (`er-api`/`banguat`/`manual`); al reutilizar una tasa por carry-forward se conserva el `source` y `rate_date` de origen.
 - ✅ **Tasa solo GTQ/USD en esta iteración**; otras monedas se dejan para después.
 - ✅ **La tasa del proveedor tiene el mismo tratamiento de validez:** si es 0/negativa/no numérica, se descarta.
 - ✅ **Formato de tasa:** `1 USD = X GTQ`, expresado en micro unidades (`fxRateMicro`) para mantener precisión entera.
-- ❓ ¿La override tiene fecha de vigencia explícita o permanece vigente hasta que se reemplaza? Se asume fecha de vigencia explícita.
-- ❓ ¿Qué periodicidad de refresco tiene sentido en esta iteración, si es que se define alguna? Puede quedar para implementación.
+- ✅ **Override manual con fecha de vigencia explícita (cierra ❓):** se registra un registro en `exchange_rates` con `source = 'manual'` para un `rate_date` concreto (un registro por `(rate_date, base_currency, quote_currency, 'manual')`, coherente con el `UNIQUE` canónico de `AGENT.md` §6.1). La override "cubre" ese día; para otro día no aplica (se busca otra fuente). No se modifica el schema (no hay `valid_from`/`valid_to`). Si el dueño necesita un rango, registra por día o fuerza `rates:refresh`.
+- ✅ **Periodicidad de refresco (cierra ❓):** refresco al arranque si la última tasa es anterior a hoy (ADR-004 §8.4), comando manual `npm run rates:refresh`, y `stale` a >24h en `/api/health`. **No** hay refresco periódico programado en esta iteración (cron/timer queda fuera; para uso personal y el supuesto de "ThinkPad encendida", el arranque + manual es suficiente). El carry-forward cubre operaciones cuando la tasa está `stale`.
 
 ## 12. Checklist antes de aprobar
 
 ```
-[ ] Problema entendido sin contexto adicional
-[ ] Objetivo binario falsable
-[ ] Contexto acotado
-[ ] "Incluye" y "No incluye" no vacíos
-[ ] Comportamiento completo (principal + alternativos + límites)
-[ ] AC en Given/When/Then, binarios
-[ ] Ejemplos por flujo crítico
-[ ] Restricciones técnicas, de negocio y de seguridad
-[ ] Trazabilidad AC → test → código (o plan de cuando se completa)
-[ ] Aprobación explícita del dueño
+[x] Problema entendido sin contexto adicional
+[x] Objetivo binario falsable
+[x] Contexto acotado
+[x] "Incluye" y "No incluye" no vacíos
+[x] Comportamiento completo (principal + alternativos + límites)
+[x] AC en Given/When/Then, binarios
+[x] Ejemplos por flujo crítico
+[x] Restricciones técnicas, de negocio y de seguridad
+[x] Trazabilidad AC → test → código (pendiente de completar al implementar)
+[x] Aprobación explícita del dueño (2026-09-21)
 ```
 
 ---
 
-*Spec derivada de la propuesta aprobada en sesión; sin contradecir ADR-003 y ADR-004.*
+*Spec aprobada el 2026-09-21. Contrato único de verdad para el módulo de tipos de cambio.*

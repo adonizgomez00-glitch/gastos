@@ -140,6 +140,47 @@ export class TransactionRepository {
       'SELECT COUNT(*) AS total FROM transactions WHERE space_id = ? AND category_id IS NOT DISTINCT FROM ? AND archived = 0'
     ).get(spaceId, categoryId ?? null).total)
   }
+
+  /**
+   * Devuelve las dos patas de una transferencia del espacio (SPEC-005).
+   * @param {string} spaceId espacio @param {string} groupId `transfer_group_id`
+   * @returns {object[]} patas en orden de creación
+   */
+  findByTransferGroup(spaceId, groupId) {
+    return this._db.prepare(
+      `SELECT * FROM transactions
+        WHERE space_id = ? AND transfer_group_id = ?
+        ORDER BY created_at, rowid`
+    ).all(spaceId, groupId).map(toTransaction)
+  }
+
+  /**
+   * Lista transferencias del espacio con filtros de fecha (AC-11).
+   * @param {string} spaceId espacio @param {object} [filters] `{ from?, to? }`
+   * @returns {object[]} patas de transferencia ordenadas por fecha
+   */
+  listTransfers(spaceId, { from, to } = {}) {
+    const conditions = ["space_id = ?", "kind = 'transfer'", 'transfer_group_id IS NOT NULL']
+    const params = [spaceId]
+    if (from) { conditions.push('occurred_on >= ?'); params.push(from) }
+    if (to) { conditions.push('occurred_on <= ?'); params.push(to) }
+    return this._db.prepare(
+      `SELECT * FROM transactions
+        WHERE ${conditions.join(' AND ')}
+        ORDER BY occurred_on DESC, created_at DESC`
+    ).all(...params).map(toTransaction)
+  }
+
+  /**
+   * Borra físicamente ambas patas de una transferencia (AC-12).
+   * @param {string} spaceId espacio @param {string} groupId `transfer_group_id`
+   * @returns {number} filas eliminadas
+   */
+  deleteByTransferGroup(spaceId, groupId) {
+    return this._db.prepare(
+      'DELETE FROM transactions WHERE space_id = ? AND transfer_group_id = ?'
+    ).run(spaceId, groupId).changes
+  }
 }
 
 function toTransaction(row) {
@@ -160,6 +201,7 @@ function toTransaction(row) {
     description: row.description,
     notes: row.notes,
     transferGroupId: row.transfer_group_id,
+    transferDirection: row.transfer_direction,
     refundOf: row.refund_of,
     archived: Number(row.archived) === 1,
     createdBy: row.created_by,

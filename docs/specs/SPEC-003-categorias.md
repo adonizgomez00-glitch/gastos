@@ -1,17 +1,18 @@
 ---
 spec_id: SPEC-003
 titulo: Categorías (gasto/ingreso, jerárquicas)
-version: 0.1.0
-estado: propuesta
+version: 1.0.0
+estado: aprobada
 fecha: 2026-09-20
+fecha_aprobacion: 2026-09-21
 autor: Adonis (con asistencia del agente)
 relacionadas: [SPEC-001, SPEC-002, SPEC-004, SPEC-006, SPEC-010]
-adrs: []
+adrs: [ADR-006]
 ---
 
 # SPEC-003 — Categorías (gasto/ingreso, jerárquicas)
 
-> Estado: propuesta · Iteración de implementación: ITER-002
+> **Estado: ✅ aprobada** (2026-09-21) · Iteración de implementación: ITER-002
 
 ## 1. Problema
 
@@ -22,7 +23,7 @@ El sistema necesita un catálogo de categorías para clasificar ingresos y gasto
 | Aspecto | Detalle |
 |---|---|
 | Usuario real | El dueño quiere clasificar sus movimientos en categorías familiares: Comida, Transporte, Sueldo, etc. |
-| Escenario | El dueño registra categorías, puede usarlas en transacciones y luego consulta totals por categoría. |
+| Escenario | El dueño registra categorías, puede usarlas en transacciones y luego consulta totales por categoría. |
 | Limitaciones | No se implementa multiusuario en esta iteración; hay un solo espacio de trabajo del dueño. |
 | Riesgo principal | Que las categorías queden planas, o que no se pueda distinguir gasto de ingreso, o que no se pueda reusar una categoría en presupuestos. |
 
@@ -30,7 +31,7 @@ Este documento se basa en el estilo de ADR y en la estructura de datos que ya fi
 
 ## 3. Objetivo (falsable)
 
-> El sistema permite crear, editar y eliminar categorías con nombre, tipo (gasto o ingreso), jerarquía opcional y cualquier otra propiedad necesaria; las categorías se reifican en transacciones y en presupuestos.
+> El sistema permite crear, editar y eliminar categorías con nombre, tipo (gasto o ingreso), jerarquía opcional y cualquier otra propiedad necesaria; las categorías se rectifican en transacciones y en presupuestos.
 
 **No se cumple si:**
 
@@ -123,9 +124,16 @@ curl -s -b /tmp/gastos.cookies -H 'Content-Type: application/json' \
 | De negocio | No se puede quitar jerarquía si ya hay dependencias; pendiente de regla concreta. |
 | De negocio | Una categoría usada en transacciones no puede eliminarse; pendiente de regla concreta para reasignación. |
 
-## 9. Contratos (si aplica)
+## 9. Contratos
 
-PENDIENTE: contratos HTTP de categorías se formalizan en `docs/API.md` cuando la spec se aprueba; se deja claro que las categorías se relacionan con transacciones y con presupuestos.
+Los endpoints de categorías están definidos en `docs/API.md` §5:
+
+| Método | Ruta | Notas |
+|---|---|---|
+| GET | `/api/categories?kind=expense\|income` | árbol de un nivel |
+| POST | `/api/categories` | `{ name, kind, parentId?, color?, icon? }` |
+| PATCH | `/api/categories/:id` | renombrar, recolorear, mover de padre |
+| POST | `/api/categories/:id/archive` | prohibido si tiene movimientos (I-05) |
 
 ## 10. Trazabilidad
 
@@ -133,26 +141,26 @@ PENDIENTE: tabla AC → test → archivo de código, que se completa cuando la s
 
 ## 11. Notas y decisiones abiertas
 
-- ❓ ¿Cuál es el Schema exacto de la tabla `categories`? Se sugiere: `id, space_id, name, kind, parent_id?, created_at, updated_at`.
-- ❓ ¿Qué profundidad máxima de jerarquía se permite en esta iteración? Se asume acotada.
-- ❓ ¿Cómo se manejan las transacciones asociadas cuando se intenta quitar una categoría? Se asume que se rechaza la eliminación o se requiere reasignación; pendiente de decisión.
-- ❓ ¿Se permite editar el tipo de categoría cuando tiene transacciones asociadas? Se asume que no, pero queda pendiente de decisión.
+- ✅ **Schema de `categories` (alineado a AGENT.md §6.1 canónico):** `categories(id PK, space_id FK spaces, name, kind CHECK IN ('expense','income'), parent_id FK categories NULL, color, icon, archived INTEGER DEFAULT 0, created_at, updated_at, UNIQUE(space_id, kind, name))`. Incluye `color`, `icon` e `archived` (I-05 bajas lógicas). El `UNIQUE(space_id, kind, name)` garantiza unicidad por nombre dentro del tipo y el espacio. Decisión cerrada.
+- ✅ **Profundidad de jerarquía:** un solo nivel (padre → hijo). No se permite jerarquía multinivel en esta iteración. `parent_id` es NULL o apunta a una categoría raíz del mismo `kind`. Decisión cerrada.
+- ✅ **Eliminación de categoría con transacciones:** se rechaza con `409` y código `CATEGORY_IN_USE`. No se permite eliminación ni reasignación automática; el dueño debe reasignar las transacciones manualmente antes de eliminar. Consistente con I-05 (`AGENT.md` §7). Decisión cerrada.
+- ✅ **Edición de tipo cuando tiene transacciones:** no se permite cambiar `kind` de una categoría si tiene transacciones asociadas (rechazo con `409`). Coherente con la regla de I-05 y con SPEC-004 §6 AC-07. Decisión cerrada.
 
 ## 12. Checklist antes de aprobar
 
 ```
-[ ] Problema entendido sin contexto adicional
-[ ] Objetivo binario falsable
-[ ] Contexto acotado
-[ ] "Incluye" y "No incluye" no vacíos
-[ ] Comportamiento completo (principal + alternativos + límites)
-[ ] AC en Given/When/Then, binarios
-[ ] Ejemplos por flujo crítico
-[ ] Restricciones técnicas, de negocio y de seguridad
-[ ] Trazabilidad AC → test → código (o plan de cuando se completa)
-[ ] Aprobación explícita del dueño
+[x] Problema entendido sin contexto adicional
+[x] Objetivo binario falsable
+[x] Contexto acotado
+[x] "Incluye" y "No incluye" no vacíos
+[x] Comportamiento completo (principal + alternativos + límites)
+[x] AC en Given/When/Then, binarios
+[x] Ejemplos por flujo crítico
+[x] Restricciones técnicas, de negocio y de seguridad
+[x] Trazabilidad AC → test → código (pendiente de completar al implementar)
+[x] Aprobación explícita del dueño (2026-09-21)
 ```
 
 ---
 
-*Este documento es una propuesta para revisión; no contradice los documentos existentes del proyecto hasta que se apruebe.*
+*Spec aprobada el 2026-09-21. Contrato único de verdad para el módulo de categorías.*

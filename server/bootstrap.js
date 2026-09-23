@@ -83,7 +83,7 @@ export function bootstrap(overrides = {}) {
   const accountService = new AccountService({ accountRepository, auditRepository })
   const categoryService = new CategoryService({ categoryRepository, auditRepository })
   const transactionService = new TransactionService({
-    transactionRepository, accountRepository, categoryRepository, auditRepository, rateService
+    db, transactionRepository, accountRepository, categoryRepository, auditRepository, rateService
   })
 
   authService.purgeExpiredSessions()

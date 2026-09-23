@@ -67,4 +67,4 @@ Procedimiento exacto, con backups y verificación de no-ruptura de Química: `do
 
 ## Licencia
 
-Sin licencia pública definida: proyecto privado y de uso personal.
+Licencia GPL v. 2 (GNU General Public License, versión 2).
