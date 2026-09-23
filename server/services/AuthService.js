@@ -15,15 +15,17 @@ export class AuthService {
    * @param {object} deps.logger logger (sin datos del usuario)
    * @param {import('../repositories/UserRepository.js').UserRepository} deps.userRepository
    * @param {import('../repositories/SessionRepository.js').SessionRepository} deps.sessionRepository
+   * @param {import('../repositories/SpaceRepository.js').SpaceRepository} [deps.spaceRepository]
    * @param {import('../../src/services/PasswordService.js').PasswordService} deps.passwordService
    * @param {import('../utils/rateLimiter.js').RateLimiter} deps.rateLimiter
    * @param {() => Date} [deps.clock] reloj inyectable (pruebas)
    */
-  constructor({ config, logger, userRepository, sessionRepository, passwordService, rateLimiter, clock = () => new Date() }) {
+  constructor({ config, logger, userRepository, sessionRepository, spaceRepository = null, passwordService, rateLimiter, clock = () => new Date() }) {
     this._config = config
     this._logger = logger
     this._users = userRepository
     this._sessions = sessionRepository
+    this._spaces = spaceRepository
     this._passwords = passwordService
     this._rateLimiter = rateLimiter
     this._clock = clock
@@ -51,7 +53,7 @@ export class AuthService {
     if (this._users.findByEmail(normalized)) throw new ValidationError('Ya existe un usuario con ese email')
 
     const { hash, salt, iterations } = await this._passwords.hash(password)
-    return this._users.create({
+    const user = this._users.create({
       id: randomUUID(),
       email: normalized,
       passwordHash: hash,
@@ -61,6 +63,18 @@ export class AuthService {
       baseCurrency: baseCurrency || this._config.baseCurrency,
       timezone: timezone || this._config.timezone
     })
+
+    // El espacio del dueño se crea junto con el usuario (ADR-006): sin él no hay
+    // dónde colgar cuentas, categorías ni transacciones (ITER-004).
+    if (this._spaces) {
+      const space = this._spaces.ensureForOwner({
+        ownerUserId: user.id,
+        name: `Espacio de ${user.name}`
+      })
+      return { ...user, spaceId: space.id }
+    }
+
+    return user
   }
 
   /**

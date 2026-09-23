@@ -1,4 +1,4 @@
-import { UnauthenticatedError } from '../utils/errors.js'
+import { ForbiddenError, UnauthenticatedError } from '../utils/errors.js'
 
 /**
  * Extrae el token de sesión de la cabecera Authorization o de la cookie.
@@ -41,7 +41,7 @@ export function createRequireAuth(deps) {
 }
 
 /**
- * Exige que el usuario autenticado sea miembro del espacio indicado.
+ * Exige que el usuario autenticado sea miembro del espacio indicado (I-07).
  * Preparado para el multiusuario (ADR-006); en el MVP hay un espacio por dueño.
  * @param {object} deps dependencias
  * @returns {(ctx: object, spaceId: string) => object} guardia
@@ -50,6 +50,10 @@ export function createRequireSpace(deps) {
   return function requireSpace(ctx, spaceId) {
     if (!ctx.auth) throw new UnauthenticatedError()
     if (!spaceId) throw new UnauthenticatedError()
+    const spaces = deps.spaceRepository
+    if (spaces && !spaces.isMember(spaceId, ctx.auth.id)) {
+      throw new ForbiddenError('No tenés acceso a este espacio')
+    }
     return ctx.auth
   }
 }

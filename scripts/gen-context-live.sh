@@ -85,9 +85,14 @@ FUNNEL="$(tailscale funnel status 2>/dev/null | grep -E '^https|proxy' | tr '\n'
 WATCHDOG="$(crontab -l 2>/dev/null | grep -c 'quimica/watchdog.sh' || echo 0)"
 
 # --- notas manuales previas (fuera de los marcadores) ---
+# Regla 5 del contrato (AGENT.md §13.4): el encabezado de la sección es del GENERADOR,
+# no del usuario. Por eso se descarta todo lo anterior al encabezado y se conserva solo
+# el cuerpo posterior; de lo contrario cada corrida duplica el encabezado (H-02).
 MANUAL=""
 if [ -f "$OUT" ]; then
-    MANUAL="$(awk '/<!-- END GENERADO -->/{flag=1; next} flag' "$OUT" | sed '/^$/N;/^\n$/D')"
+    MANUAL="$(awk '/<!-- END GENERADO -->/{flag=1; next} flag' "$OUT" \
+        | awk '/^## Notas manuales \(sobreviven a la regeneración\)$/{flag=1; next} flag' \
+        | sed '/^$/N;/^\n$/D')"
 fi
 [ -z "$MANUAL" ] && MANUAL="&lt;agregá acá observaciones, incidentes o decisiones operativas&gt;"
 

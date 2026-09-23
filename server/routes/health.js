@@ -19,7 +19,7 @@ export function healthRoutes(deps) {
         ctx.json(status, {
           status: db === 'up' ? 'ok' : 'degraded',
           db,
-          rates: 'missing', // se completa con SPEC-008 (tipos de cambio)
+          rates: ratesFreshness(deps),
           service: ctx.config.service,
           version: ctx.config.version
         })
@@ -27,3 +27,21 @@ export function healthRoutes(deps) {
     }
   ]
 }
+
+/**
+ * Estado de frescura de la última tasa registrada (SPEC-008 AC-08).
+ * `missing` si no hay ninguna; `stale` a más de 24 h.
+ * @param {object} deps dependencias
+ * @returns {'ok'|'stale'|'missing'} estado
+ */
+function ratesFreshness(deps) {
+  try {
+    const latest = deps.exchangeRateRepository?.findLatest('USD', 'GTQ')
+    if (!latest) return 'missing'
+    const ageHours = (Date.now() - new Date(latest.fetchedAt).getTime()) / 3_600_000
+    return ageHours > 24 ? 'stale' : 'ok'
+  } catch {
+    return 'missing'
+  }
+}
+

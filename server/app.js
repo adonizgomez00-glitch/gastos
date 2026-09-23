@@ -3,6 +3,10 @@ import { isSameOrigin, parseUrl, readJsonBody, sendError, sendJson } from './uti
 import { Router } from './router.js'
 import { healthRoutes } from './routes/health.js'
 import { authRoutes } from './routes/auth.js'
+import { accountRoutes } from './routes/accounts.js'
+import { categoryRoutes } from './routes/categories.js'
+import { transactionRoutes } from './routes/transactions.js'
+import { rateRoutes } from './routes/rates.js'
 import { staticRoutes } from './routes/static.js'
 
 const METHODS_WITH_BODY = ['POST', 'PUT', 'PATCH']
@@ -16,14 +20,23 @@ export function createApp(deps) {
   const { config, logger } = deps
   const router = new Router()
 
-  for (const route of [...healthRoutes(deps), ...authRoutes(deps), ...staticRoutes(deps)]) {
+  const routes = [
+    ...healthRoutes(deps),
+    ...authRoutes(deps),
+    ...accountRoutes(deps),
+    ...categoryRoutes(deps),
+    ...transactionRoutes(deps),
+    ...rateRoutes(deps),
+    ...staticRoutes(deps)
+  ]
+  for (const route of routes) {
     router.register(route.method, route.path, route.handler)
   }
 
   return async function handleRequest(req, res) {
     const started = Date.now()
     const method = (req.method || 'GET').toUpperCase()
-    const { pathname } = parseUrl(req)
+    const { pathname, query } = parseUrl(req)
     let status = 200
     try {
       const match = router.match(method, pathname)
@@ -50,6 +63,7 @@ export function createApp(deps) {
         deps,
         logger,
         params: match.params,
+        query,
         req,
         res,
         body: METHODS_WITH_BODY.includes(method) ? await readJsonBody(req, { limit: config.bodyLimitBytes }) : {},
