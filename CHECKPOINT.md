@@ -1,6 +1,7 @@
 # CHECKPOINT — App de Gastos Personales
 
-> **Último checkpoint de contexto**: 2026-09-22 · **ITER-005 (completada)** · Fase B (implementación)
+> **Último checkpoint de contexto**: 2026-10-22 · deps Node actualizadas (playwright, 0 vulns) · Node 22.23.4
+> **Anterior**: 2026-09-22 · **ITER-005 (completada)** · Fase B (implementación)
 > **Uso de contexto al cerrar**: —
 > **Estado de infraestructura**: ver `docs/Context_live.md` (local, **fuera de git**)
 
